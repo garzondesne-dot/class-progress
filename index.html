@@ -1349,5 +1349,30 @@
       location.reload();
     }
   </script>
+<script>
+(function(){
+  const key='class-progress-web-theme';
+  const style=document.createElement('style');
+  style.textContent=`
+    html.web-dark,html.web-dark body{background:#0f172a!important;color:#e2e8f0!important;color-scheme:dark}
+    html.web-dark .bg-white,html.web-dark .bg-slate-50,html.web-dark .bg-gray-50,html.web-dark .bg-slate-100{background-color:#1e293b!important}
+    html.web-dark .text-slate-900,html.web-dark .text-slate-800,html.web-dark .text-slate-700,html.web-dark .text-gray-900,html.web-dark .text-gray-800{color:#f1f5f9!important}
+    html.web-dark .text-slate-600,html.web-dark .text-slate-500,html.web-dark .text-slate-400,html.web-dark .text-gray-500{color:#cbd5e1!important}
+    html.web-dark .border-slate-100,html.web-dark .border-slate-200,html.web-dark .border-gray-200{border-color:#475569!important}
+    html.web-dark input,html.web-dark textarea,html.web-dark select{background-color:#334155!important;color:#f8fafc!important;border-color:#64748b!important}
+    html.web-dark input::placeholder,html.web-dark textarea::placeholder{color:#cbd5e1!important}
+    html.web-dark .step-none{background:#334155!important}
+    html.web-dark .step-dist{background:#115e59!important;color:#f0fdfa!important}
+    html.web-dark .step-solve{background:#854d0e!important;color:#fffbeb!important}
+    html.web-dark .step-check{background:#1e40af!important;color:#eff6ff!important}
+    html.web-dark .compact-topic,html.web-dark .compact-session,html.web-dark .compact-status{color:inherit!important}
+    #web-theme-toggle{position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:1000;border:1px solid #64748b;border-radius:999px;background:#1e293b;color:#fff;padding:10px 15px;font-weight:700;box-shadow:0 4px 12px #0004}
+  `;
+  document.head.appendChild(style);
+  function apply(dark){document.documentElement.classList.toggle('web-dark',dark);const b=document.getElementById('web-theme-toggle');if(b)b.textContent=dark?'☀️ 라이트 모드':'🌙 다크 모드';}
+  function init(){if(window.Capacitor?.isNativePlatform?.())return;const b=document.createElement('button');b.id='web-theme-toggle';b.type='button';b.setAttribute('aria-label','화면 테마 전환');document.body.appendChild(b);apply(localStorage.getItem(key)==='dark');b.addEventListener('click',()=>{const dark=!document.documentElement.classList.contains('web-dark');localStorage.setItem(key,dark?'dark':'light');apply(dark);});}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
 </body>
 </html>
