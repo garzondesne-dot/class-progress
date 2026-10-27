@@ -724,7 +724,7 @@
           } else if (curStep === 'check') {
             // [검사 완료] 상태일 때: [다음차시 배포 시작] + [메모] + [되돌아가기]
             html += `
-              <button onclick="startNextSession('${cls}')" class="col-span-2 py-2.5 px-2 rounded-xl bg-brand-600 hover:bg-brand-700 active:scale-95 text-white font-black text-xs shadow-xs flex items-center justify-center gap-1 transition">
+              <button onclick="startNextSession('${cls}')" class=" py-2.5 px-2 rounded-xl bg-brand-600 hover:bg-brand-700 active:scale-95 text-white font-black text-xs shadow-xs flex items-center justify-center gap-1 transition">
                 <i data-lucide="arrow-right-circle" class="w-4 h-4"></i>
                 <span>다음 ${curSessionNo + 1}차시 배포 시작</span>
               </button>
@@ -732,6 +732,7 @@
                 <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-400"></i>
                 <span>[메모]</span>
               </button>
+              <button onclick="rollbackClassStep('${cls}')" class="py-2 px-1 rounded-xl bg-slate-200 text-slate-800 font-bold text-[11px]">되돌아가기</button>
             `;
           }
 
