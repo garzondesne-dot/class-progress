@@ -146,7 +146,7 @@ html.apk-dark .compact-status,html.web-dark .compact-status{background:#ffffff26
 <p class="text-xs text-slate-500">컴시간 알리미의 ‘학교코드’에서 확인할 수 있습니다.</p></form>
 <p id="identitySchoolSummary" class="font-bold text-sm text-blue-800"></p>
 <div class="space-y-2"><label for="identityTeacher" class="block font-bold text-sm">2. 선생님 선택</label><select id="identityTeacher" disabled onchange="selectIdentityTeacher()" class="w-full border border-slate-300 rounded-xl px-3 py-3 text-base"><option value="">학교를 먼저 확인해 주세요</option></select><p class="text-xs text-slate-500">이름 일부가 가려져 있으면 교사 번호도 함께 확인하세요.</p></div>
-<p id="identityStatus" role="status" aria-live="polite" class="text-sm text-slate-600"></p>
+
 <button id="identityContinue" type="button" disabled onclick="confirmIdentitySelection()" class="w-full bg-blue-700 disabled:opacity-40 text-white font-bold rounded-xl px-4 py-4">내 시간표로 시작하기</button>
 </div>
 <div id="identityOfflineFields" class="hidden offline-form">
@@ -158,7 +158,7 @@ html.apk-dark .compact-status,html.web-dark .compact-status{background:#ffffff26
 <button class="offline-start" type="button" onclick="startOfflineIdentity()">오프라인으로 시작하기</button>
 <p id="offlineAvailability">컴시간 연결 없이 사용할 수 있습니다. 인터넷이 없는 곳에서 다시 열려면 온라인 접속 중 앱 화면 저장이 먼저 완료되어야 합니다.</p>
 </div>
-<button type="button" class="restore-start" onclick="requestBackupRestore()">백업 파일에서 이어서 사용하기</button>
+<p id="identityStatus" role="status" aria-live="polite" class="text-sm text-slate-600"></p><button type="button" class="restore-start" onclick="requestBackupRestore()">백업 파일에서 이어서 사용하기</button>
 <button id="identityCancel" type="button" onclick="cancelIdentitySelection()" class="hidden w-full text-slate-600 py-3">현재 선생님으로 돌아가기</button>
 <p class="text-xs text-slate-500">진도·메모는 이 기기와 브라우저에 저장됩니다. 선생님 선택은 본인 인증이나 다른 기기와의 기록 동기화가 아닙니다.</p>
 </div></section>

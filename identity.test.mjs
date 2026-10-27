@@ -91,4 +91,12 @@ run("requestFullReset();performFullReset()");assert.equal(run('appState.isConfig
 node('resetTyped').value='초기화';run('performFullReset()');
 assert.equal(run('needsIdentitySetup()'),true);assert.deepEqual(json('appState.progress'),{});
 console.log('PASS: offline timetable, empty periods, profile return, full backup round trip, malicious/unsupported backup rejection, failed restore preservation, typed reset and setup return');
+const cancelled=[],scheduled=[];
+context.window.Capacitor={isNativePlatform:()=>true,Plugins:{LocalNotifications:{checkPermissions:async()=>({display:'granted'}),checkExactNotificationSetting:async()=>({exact_alarm:'granted'}),getPending:async()=>({notifications:[{id:100001},{id:990001}]}),cancel:async n=>cancelled.push(...n.notifications),schedule:async n=>scheduled.push(...n.notifications)}}};
+run("appState=buildOfflineState(appState,{name:'테스트',subject:'수학',school:'',classes:'1-1'});appState.timetable={'화-7':'1-1'}");
+await run('window.scheduleNativeClassAlarms(false)');
+assert.deepEqual(JSON.parse(JSON.stringify(cancelled)),[{id:100001}]);assert.ok(scheduled.length>0);assert.ok(scheduled.every(n=>n.body.includes('1-1 7교시')));
+cancelled.length=0;scheduled.length=0;run('appState=newBlankState()');await run('window.scheduleNativeClassAlarms(false)');assert.equal(scheduled.length,0);assert.equal(cancelled.length,1);
+console.log('PASS: native alarm reschedule, reserved ID isolation, offline timetable alarms, reset cancels old alarms');
+
 
