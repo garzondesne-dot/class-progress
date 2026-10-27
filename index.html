@@ -72,7 +72,24 @@
     .active-card-pulse {
       animation: pulse-subtle 2s infinite ease-in-out;
     }
-  </style>
+  
+    /* Three-column day focus: one narrow neighbor on each side */
+    .compact-week-grid{display:grid;grid-template-columns:44px minmax(0,.56fr) minmax(0,3.5fr) minmax(0,.56fr);gap:5px;align-items:stretch}
+    .compact-day{height:45px;border-radius:12px;background:#f1f5f9;color:#475569;font-size:12px;display:flex;align-items:center;justify-content:center;flex-direction:column;white-space:nowrap;overflow:hidden}
+    .compact-day.active{background:#1d4ed8;color:white;font-size:16px;box-shadow:0 3px 8px #1d4ed82b}
+    .compact-day small{font-size:10px}.compact-day.blank{background:transparent}
+    .compact-week-grid .period-label{min-height:57px;align-items:flex-start;line-height:1.1;font-size:12px}
+    .compact-week-grid .period-label small{font-size:11px;margin-top:3px}
+    .compact-side-slot{min-height:57px;min-width:0;border-radius:10px;border:1px solid #e2e8f0;background:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:800;color:#334155;overflow:hidden;white-space:nowrap}
+    .compact-side-slot.step-dist{background:#ccfbf1}.compact-side-slot.step-solve{background:#fef3c7}.compact-side-slot.step-check{background:#dbeafe}
+    .side-dot{height:7px;width:7px;border-radius:50%;background:#3b82f6}
+    .compact-lesson{position:relative;min-width:0;min-height:57px;padding:5px 27px 5px 10px;border-radius:12px;border:1px solid #cbd5e1;border-left:4px solid #94a3b8;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;gap:1px;overflow:hidden}
+    .compact-lesson.step-dist{background:#ccfbf1;border-color:#14b8a6}.compact-lesson.step-solve{background:#fef3c7;border-color:#f59e0b}.compact-lesson.step-check{background:#dbeafe;border-color:#2563eb}.compact-lesson.step-none{background:#f8fafc}
+    .compact-session{font-size:13px;font-weight:800;color:#0f172a;line-height:1.1}.compact-topic{font-size:18px;font-weight:900;color:#0f172a;line-height:1.12;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:100%}.compact-status{font-size:10px;font-weight:800;color:#334155}
+    .compact-chevron{position:absolute;right:6px;top:50%;transform:translateY(-50%);height:18px;width:18px;color:#334155}
+    .compact-empty{min-height:57px;border-radius:12px;border:1px dashed #cbd5e1;background:#f8fafc;color:#94a3b8;display:flex;align-items:center;justify-content:center;font-size:12px}
+    .compact-detail{grid-column:2/-1}.compact-detail-summary{display:flex;flex-direction:column;gap:3px;margin:8px 0}.compact-detail-summary strong{font-size:22px}.compact-detail-summary small{font-weight:700}
+</style>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex justify-center selection:bg-indigo-100">
 
@@ -697,25 +714,33 @@
     }
     function renderMainClassList() {
       const container=document.getElementById('mainClassList');if(!container)return;
-      const dates=weekDates(),today=localDate(new Date()),starts=getStartTimes(),ends=getAlarmTimes();
-      let html=`<div class="flex justify-between items-center text-sm font-bold"><button onclick="changeWeek(-1)" aria-label="이전 주" class="p-2">←</button><span>${localDate(dates[0])} ~ ${localDate(dates[4])}</span><button onclick="changeWeek(1)" aria-label="다음 주" class="p-2">→</button><button onclick="weekOffset=0;selectDay(Math.min(4,Math.max(0,new Date().getDay()-1)))" class="p-2 text-blue-700">이번 주</button></div><div class="flex gap-1 mb-1">`;
-      dates.forEach((d,i)=>{const isToday=localDate(d)===today;html+=`<button onclick="selectDay(${i})" class="rounded-xl p-2 ${i===selectedDay?'flex-[2] bg-blue-700 text-white text-lg':'flex-1 bg-slate-100 text-slate-700 text-xs'} font-black">${isToday?'오늘 ':''}${DAYS[i]} <span class="text-xs">${d.getMonth()+1}/${d.getDate()}</span></button>`;});
-      html+=`</div><div class="week-grid" style="grid-template-columns:42px ${DAYS.map((_,i)=>i===selectedDay?'minmax(0,2.8fr)':'minmax(0,1fr)').join(' ')}"><div></div>`;
-      DAYS.forEach((day,i)=>html+=`<div class="text-center font-bold text-xs ${i===selectedDay?'text-blue-700':''}">${day}</div>`);
-      for(let period=1;period<=7;period++) {
-        html+=`<div class="period-label"><strong>${period}교시</strong><small>${starts[period-1]}<br>${ends[period-1]}</small></div>`;
-        DAYS.forEach((day,i)=>{
-          const cls=appState.timetable[day+'-'+period],key=i+'-'+period;
-          if(!cls){html+=`<div class="lesson-empty" aria-label="${day} ${period}교시 빈칸"></div>`;return;}
+      const dates=weekDates(),today=localDate(new Date()),starts=getStartTimes();
+      const prev=selectedDay-1,next=selectedDay+1,visible=[prev,selectedDay,next];
+      let html=`<div class="flex justify-between items-center text-sm font-bold mb-2"><button onclick="changeWeek(-1)" aria-label="이전 주" class="p-2">←</button><span>${localDate(dates[0])} ~ ${localDate(dates[4])}</span><button onclick="changeWeek(1)" aria-label="다음 주" class="p-2">→</button><button onclick="weekOffset=0;selectDay(Math.min(4,Math.max(0,new Date().getDay()-1)))" class="p-2 text-blue-700">이번 주</button></div>`;
+      html+='<div class="compact-week-grid">';
+      html+='<div></div>';
+      visible.forEach((i,k)=>{
+        if(i<0||i>4){html+='<div class="compact-day blank"></div>';return;}
+        const d=dates[i],active=i===selectedDay,isToday=localDate(d)===today;
+        html+=`<button onclick="selectDay(${i})" class="compact-day ${active?'active':''}"><b>${DAYS[i]} ${d.getMonth()+1}/${d.getDate()}</b>${active&&isToday?'<small>오늘</small>':''}</button>`;
+      });
+      for(let period=1;period<=7;period++){
+        html+=`<div class="period-label"><strong>${period}교시</strong><small>${starts[period-1]}</small></div>`;
+        visible.forEach((i,k)=>{
+          if(i<0||i>4){html+='<div class="compact-side-slot"></div>';return;}
+          const day=DAYS[i],cls=appState.timetable[day+'-'+period],key=i+'-'+period,active=i===selectedDay;
+          if(!cls){html+=active?'<div class="compact-empty">수업 없음</div>':'<div class="compact-side-slot"></div>';return;}
           const data=appState.progress[cls];
-          if(!data){html+=`<div class="lesson-empty">${escapeHtml(cls)}<br>설정 확인</div>`;return;}
+          if(!data){html+=`<div class="compact-side-slot">${escapeHtml(cls)}</div>`;return;}
           const no=data.currentSession||1,step=data.currentStep||'none',labels=getStepLabels();
-          html+=`<button onclick="selectedDay=${i};toggleLesson('${key}')" aria-expanded="${expandedLesson===key}" class="lesson-card step-${step} ${i===selectedDay?'focused':''}"><span class="lesson-class">${escapeHtml(cls)}</span><span class="lesson-session">${no}차시</span><strong class="lesson-topic">${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}</strong><small>${step==='none'?'대기':escapeHtml(labels[step]||step)}</small></button>`;
+          if(!active){html+=`<button onclick="selectDay(${i})" class="compact-side-slot step-${step}" aria-label="${day} ${period}교시 ${escapeHtml(cls)}">${escapeHtml(cls)}<span class="side-dot"></span></button>`;return;}
+          html+=`<button onclick="toggleLesson('${key}')" aria-expanded="${expandedLesson===key}" class="compact-lesson step-${step}"><span class="compact-session">${escapeHtml(cls)} · ${no}차시</span><strong class="compact-topic">${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}</strong><span class="compact-status">${step==='none'?'대기':escapeHtml(labels[step]||step)}</span><i data-lucide="chevron-right" class="compact-chevron"></i></button>`;
         });
         if(expandedLesson===selectedDay+'-'+period){
           const cls=appState.timetable[DAYS[selectedDay]+'-'+period],data=appState.progress[cls];
-          if(data){const r=data.sessions[data.currentSession]||{};
-          html+=`<div class="lesson-detail"><strong>${localDate(dates[selectedDay])} (${DAYS[selectedDay]}) · ${period}교시 ${starts[period-1]}–${ends[period-1]}</strong><p>기록: ${escapeHtml(r.date||'미기록')} · 수업: ${escapeHtml(r.lessonDate||'미기록')}</p><p class="text-xs">반별 현재 진도 · 다른 날짜를 선택해도 같은 반의 진도가 표시됩니다.</p><div class="flex gap-2 mt-2"><button class="bg-blue-600 text-white rounded-lg px-3 py-2 font-bold" onclick="advanceLesson('${cls}',${period})">진도 나가기</button><button class="bg-white border rounded-lg px-3 py-2" onclick="openSplitMemoModal('${cls}',${data.currentSession})">📝 메모</button><button class="bg-emerald-600 text-white rounded-lg px-3 py-2" onclick="rollbackClassStep('${cls}')">되돌아가기</button></div></div>`;}
+          if(data){const r=data.sessions[data.currentSession]||{},no=data.currentSession||1,step=data.currentStep||'none',labels=getStepLabels();
+            html+=`<div class="lesson-detail compact-detail"><strong>${localDate(dates[selectedDay])} (${DAYS[selectedDay]}) · ${period}교시 ${starts[period-1]}–${getAlarmTimes()[period-1]}</strong><div class="compact-detail-summary"><span>${escapeHtml(cls)} · ${no}차시</span><strong>${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}</strong><small>${step==='none'?'대기':escapeHtml(labels[step]||step)}</small></div><p>기록: ${escapeHtml(r.date||'미기록')}</p><div class="flex gap-2 mt-2"><button class="bg-blue-600 text-white rounded-lg px-3 py-3 font-bold flex-1" onclick="advanceLesson('${cls}',${period})">진도 나가기</button><button class="bg-white border rounded-lg px-3 py-3" onclick="openSplitMemoModal('${cls}',${no})">메모</button><button class="bg-emerald-600 text-white rounded-lg px-3 py-3" onclick="rollbackClassStep('${cls}')">되돌아가기</button></div></div>`;
+          }
         }
       }
       container.innerHTML=html+'</div>';lucide.createIcons();
@@ -1093,7 +1118,7 @@
       appState.periodStarts=starts;appState.alarmTimes=ends;saveState();renderMainClassList();alert('수업·알림 시간 저장 완료');
     }
     function checkTimetableAlarm() {
-      if (document.hidden || !('Notification' in window) || Notification.permission !== 'granted') return;
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
       const now = new Date();
       const day = ['일','월','화','수','목','금','토'][now.getDay()];
       if (day === '토' || day === '일') return;
