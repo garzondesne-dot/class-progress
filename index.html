@@ -290,6 +290,12 @@
             <p class="text-[11px] text-slate-500 leading-snug">앱 화면이 열려 있을 때만 알림을 확인합니다. 브라우저를 종료하거나 화면을 끄면 알림이 보장되지 않습니다. 현재 종료 시각은 09:50·10:40·11:30·12:20·14:10·15:00·15:50으로 고정되어 있습니다. 수업 종료 시각(예: 09:50)에 스마트폰 상단에 <strong>"[1-1] 수업 진도를 체크하세요!"</strong> 알림이 울리며, 누르면 해당 반으로 즉시 이동합니다.</p>
           </div>
 
+          <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-3 space-y-3">
+            <div class="font-black text-emerald-900">교시별 종료 시각 설정</div>
+            <div id="alarmTimeSettings" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+            <button type="button" onclick="saveAlarmTimeSettings()" class="w-full rounded-xl bg-emerald-700 text-white font-bold py-3">알림 시간 저장</button>
+            <p class="text-xs text-emerald-950">시간표에 반을 배정하고 알림 권한을 허용하세요. 앱 종료·화면 꺼짐 상태의 알림은 보장되지 않습니다.</p>
+          </div>
           <!-- 시간표 요일 탭 & 배정 표 -->
           <div>
             <div class="flex items-center justify-between mb-2">
@@ -668,7 +674,7 @@
         const topicText = appState.sessionTopics[curSessionNo] || `${curSessionNo}차시 수업`;
 
         // 카드 테마 스타일링 (상태별 색상 변경)
-        let cardBgClass = 'border-slate-400 border-l-[6px]';
+        let cardBgClass = 'border-slate-300 border-l-[5px]';
         let badgeClass = 'bg-slate-100 text-slate-500';
         const labels = getStepLabels();
         let stepText = '수업 대기 (터치 시 ' + labels.dist + ')';
@@ -676,17 +682,17 @@
 
         if (curStep === 'dist') {
           // 1단계: 배포 (청록색)
-          cardBgClass = 'border-cyan-700 border-l-[6px]';
+          cardBgClass = 'border-teal-400 border-l-[5px]';
           badgeClass = 'bg-cyan-800 text-white font-black';
           stepText = '[1단계: ' + labels.dist + ' 완료]';
         } else if (curStep === 'solve') {
           // 2단계: 풀이 진행 (주황/노랑색)
-          cardBgClass = 'border-amber-700 border-l-[6px]';
+          cardBgClass = 'border-amber-400 border-l-[5px]';
           badgeClass = 'bg-amber-800 text-white font-black';
           stepText = '[2단계: ' + labels.solve + ' 진행중]';
         } else if (curStep === 'check') {
           // 3단계: 최종 검사 완료 (파란색)
-          cardBgClass = 'border-blue-800 border-l-[6px]';
+          cardBgClass = 'border-blue-500 border-l-[5px]';
           badgeClass = 'bg-blue-900 text-white font-black';
           stepText = '[3단계: ' + labels.check + ' 완료]';
         }
@@ -695,21 +701,21 @@
           stepText = '[' + getStepCount() + '단계: ' + labels[activeStepKeys().at(-1)] + ' 완료]';
         }
         html += `
-          <div class="rounded-xl border ${cardBgClass} px-3 py-2 shadow-xs transition-all" style="background-color:${curStep === 'dist' ? '#22d3ee' : curStep === 'solve' ? '#facc15' : curStep === 'check' ? '#3b82f6' : '#e2e8f0'}">
+          <div class="rounded-2xl border ${cardBgClass} px-3 py-2 shadow-sm transition-all" style="background-color:${curStep === 'dist' ? '#d4faf2' : curStep === 'solve' ? '#fff4c7' : curStep === 'check' ? '#dbeafe' : '#f8fafc'}">
             <!-- 상단: 누르기만 하면 즉시 [배포]로 인식하는 반 버튼 -->
             <button onclick="handleMainClassButtonClick('${cls}')" class="w-full flex items-center justify-between text-left active:scale-[0.98] transition min-h-[42px]">
               <div class="flex items-center gap-2 min-w-0">
-                <span class="text-xl font-black tracking-tight ${curStep === 'check' ? 'text-white' : 'text-slate-950'}">${cls}</span>
+                <span class="text-xl font-black tracking-tight text-slate-950">${cls}</span>
                 <div>
                   <div class="flex items-center gap-1.5">
-                    <span class="text-base font-black whitespace-nowrap ${curStep === 'check' ? 'text-white' : 'text-slate-950'}">${curSessionNo}차시</span>
+                    <span class="text-base font-black whitespace-nowrap text-slate-950">${curSessionNo}차시</span>
                     <span class="text-xs px-1.5 py-0.5 rounded-full ${badgeClass}">${stepText}</span>
                   </div>
-                  <p class="text-base font-bold truncate max-w-[220px] leading-tight ${curStep === 'check' ? 'text-white' : 'text-slate-950'}">${topicText}</p>
+                  <p class="text-base font-bold truncate max-w-[220px] leading-tight text-slate-950">${topicText}</p>
                 </div>
               </div>
               <div class="text-left pl-1 self-start">
-                <span class="text-xs font-bold block ${curStep === 'check' ? 'text-white' : 'text-slate-800'}">${sData.date ? sData.date.slice(5) : '미시작'}</span>
+                <span class="text-xs font-bold block text-slate-600">${sData.date ? sData.date.slice(5) : '미시작'}</span>
                 
               </div>
             </button>
@@ -718,8 +724,8 @@
         // Large card advances the step; secondary actions remain compact.
         html += `
           <div class="flex justify-end items-center gap-2 mt-0 pb-0.5">
-            <button onclick="openSplitMemoModal('${cls}', ${curSessionNo})" class="flex-1 text-base font-extrabold text-white rounded-xl px-4 py-2 min-h-[48px] bg-blue-950 border border-blue-950 flex items-center justify-center gap-2" aria-label="${cls} 메모"><i data-lucide="notebook-pen" class="w-5 h-5"></i>메모</button>
-            <button onclick="rollbackClassStep('${cls}')" class="w-14 h-12 shrink-0 rounded-xl bg-purple-700 text-white flex items-center justify-center border border-purple-800" title="이전 단계로 되돌아가기" aria-label="${cls} 되돌아가기"><i data-lucide="undo-2" class="w-7 h-7"></i></button>
+            <button onclick="openSplitMemoModal('${cls}', ${curSessionNo})" class="w-12 h-11 shrink-0 rounded-xl bg-white text-indigo-700 border border-indigo-200 shadow-sm flex items-center justify-center" title="메모" aria-label="${cls} 메모"><i data-lucide="notebook-pen" class="w-6 h-6"></i></button>
+            <button onclick="rollbackClassStep('${cls}')" class="w-12 h-11 shrink-0 rounded-xl bg-emerald-600 text-white flex items-center justify-center border border-emerald-700 shadow-sm" title="이전 단계로 되돌아가기" aria-label="${cls} 되돌아가기"><i data-lucide="corner-up-left" class="w-6 h-6"></i></button>
           </div>
         `;
         html += `</div>`;
@@ -773,6 +779,7 @@
     function rollbackClassStep(cls) {
       const data = appState.progress[cls];
       if (data.currentStep === 'none' && data.currentSession > 1) {
+        delete data.sessions[data.currentSession];
         data.currentSession--;
         data.currentStep = data.sessions[data.currentSession]?.step || activeStepKeys().at(-1);
         saveState(); renderMainClassList(); return;
@@ -812,10 +819,10 @@
       clsData.currentSession += 1;
       const nextNo = clsData.currentSession;
       
-      clsData.currentStep = activeStepKeys()[0];
+      clsData.currentStep = 'none';
       clsData.sessions[nextNo] = {
-        step: activeStepKeys()[0],
-        date: getNowTimestamp(),
+        step: 'none',
+        date: '',
         memoDist: '',
         memoSolve: '',
         memoCheck: ''
@@ -1076,13 +1083,28 @@
         document.addEventListener('visibilitychange', () => { if (!document.hidden) checkTimetableAlarm(); });
       }
       checkTimetableAlarm();
+      renderAlarmTimeSettings();
+    }
+    function getAlarmTimes() {
+      const defaults = ['09:50','10:40','11:30','12:20','14:10','15:00','15:50'];
+      return defaults.map((t,i) => /^([01]\\d|2[0-3]):[0-5]\\d$/.test(appState.alarmTimes?.[i] || '') ? appState.alarmTimes[i] : t);
+    }
+    function renderAlarmTimeSettings() {
+      const target = document.getElementById('alarmTimeSettings');
+      if (!target) return;
+      target.innerHTML = getAlarmTimes().map((t,i) => '<label class="flex items-center justify-between gap-2 text-sm font-bold">'+(i+1)+'교시 종료 <input type="time" id="alarmTime'+i+'" value="'+t+'" class="border rounded-lg p-2 bg-white text-slate-900"></label>').join('');
+    }
+    function saveAlarmTimeSettings() {
+      const times = Array.from({length:7},(_,i)=>document.getElementById('alarmTime'+i)?.value);
+      if (times.some(t=>!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(t||''))) { alert('교시별 종료 시각을 확인하세요.'); return; }
+      appState.alarmTimes = times; saveState(); alert('종료 시각 저장 완료. 앱이 열려 있을 때 알림을 확인합니다.');
     }
     function checkTimetableAlarm() {
       if (document.hidden || !('Notification' in window) || Notification.permission !== 'granted') return;
       const now = new Date();
       const day = ['일','월','화','수','목','금','토'][now.getDay()];
       if (day === '토' || day === '일') return;
-      const periodEnds = ['09:50','10:40','11:30','12:20','14:10','15:00','15:50'];
+      const periodEnds = getAlarmTimes();
       const hhmm = now.toTimeString().slice(0,5);
       periodEnds.forEach((end, i) => {
         if (end !== hhmm) return;
@@ -1091,8 +1113,7 @@
         const key = 'class_alarm_'+now.toDateString()+'_'+day+'_'+(i+1);
         if (sessionStorage.getItem(key)) return;
         sessionStorage.setItem(key,'1');
-        const n = new Notification('수업 진도 입력 알림', {body:cls+' 수업이 끝났습니다. 진도를 체크하세요.'});
-        n.onclick=()=>{window.focus();navigateTo('main');n.close();};
+        try { const n = new Notification('수업 진도 입력 알림', {body:cls+' 수업이 끝났습니다. 진도를 체크하세요.'}); n.onclick=()=>{window.focus();navigateTo('main');n.close();}; } catch(e) { sessionStorage.removeItem(key); console.warn(e); }
       });
     }
 
