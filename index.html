@@ -413,6 +413,15 @@
             </div>
           </div>
 
+          <div class="rounded-xl bg-indigo-50 border border-indigo-100 p-3 space-y-2">
+            <p class="font-black text-sm text-indigo-900">진도 3단계 이름 변경</p>
+            <p class="font-normal text-[11px] text-slate-600">기존 진도 기록은 유지되고 화면에 표시되는 이름만 변경됩니다.</p>
+            <div class="grid grid-cols-3 gap-2">
+              <label class="text-xs">1단계<input id="setStepDist" maxlength="12" class="mt-1 w-full min-w-0 p-2 rounded-lg border border-slate-200 text-sm" placeholder="배포"></label>
+              <label class="text-xs">2단계<input id="setStepSolve" maxlength="12" class="mt-1 w-full min-w-0 p-2 rounded-lg border border-slate-200 text-sm" placeholder="풀이"></label>
+              <label class="text-xs">3단계<input id="setStepCheck" maxlength="12" class="mt-1 w-full min-w-0 p-2 rounded-lg border border-slate-200 text-sm" placeholder="검사"></label>
+            </div>
+          </div>
           <hr class="border-slate-100">
 
           <div>
@@ -628,6 +637,10 @@
     }
 
     // --- 3. [1-1]~[1-5] 원터치 즉시 상태 전환 및 [풀이][메모][되돌아가기] 버튼 로직 ---
+    function getStepLabels() {
+      return {dist: appState.stepLabels?.dist || '배포', solve: appState.stepLabels?.solve || '풀이', check: appState.stepLabels?.check || '검사'};
+    }
+
     function renderMainClassList() {
       const container = document.getElementById('mainClassList');
       if (!container) return;
@@ -646,24 +659,25 @@
         // 카드 테마 스타일링 (상태별 색상 변경)
         let cardBgClass = 'bg-white border-slate-200';
         let badgeClass = 'bg-slate-100 text-slate-500';
-        let stepText = '수업 대기 (터치 시 배포)';
+        const labels = getStepLabels();
+        let stepText = '수업 대기 (터치 시 ' + labels.dist + ')';
         let isWaiting = curStep === 'none';
 
         if (curStep === 'dist') {
           // 1단계: 배포 (청록색)
           cardBgClass = 'bg-cyan-50/70 border-cyan-300 ring-2 ring-cyan-400/30';
           badgeClass = 'bg-cyan-500 text-white font-black';
-          stepText = '[1단계: 배포 완료]';
+          stepText = '[1단계: ' + labels.dist + ' 완료]';
         } else if (curStep === 'solve') {
           // 2단계: 풀이 진행 (주황/노랑색)
           cardBgClass = 'bg-amber-50/80 border-amber-300 ring-2 ring-amber-400/30';
           badgeClass = 'bg-amber-500 text-white font-black';
-          stepText = '[2단계: 풀이 진행중]';
+          stepText = '[2단계: ' + labels.solve + ' 진행중]';
         } else if (curStep === 'check') {
           // 3단계: 최종 검사 완료 (파란색)
           cardBgClass = 'bg-blue-50/80 border-blue-300 ring-2 ring-blue-500/30';
           badgeClass = 'bg-blue-600 text-white font-black';
-          stepText = '[3단계: 검사 완료]';
+          stepText = '[3단계: ' + labels.check + ' 완료]';
         }
 
         html += `
@@ -674,10 +688,10 @@
                 <span class="text-xl font-black text-slate-900 tracking-tight">${cls}</span>
                 <div>
                   <div class="flex items-center gap-1.5">
-                    <span class="text-xs font-black text-slate-800 whitespace-nowrap">${curSessionNo}차시</span>
-                    <span class="text-[10px] px-1.5 py-0.5 rounded-full ${badgeClass}">${stepText}</span>
+                    <span class="text-sm font-black text-slate-900 whitespace-nowrap">${curSessionNo}차시</span>
+                    <span class="text-[11px] px-1.5 py-0.5 rounded-full ${badgeClass}">${stepText}</span>
                   </div>
-                  <p class="text-[11px] text-slate-500 font-medium truncate max-w-[190px]">${topicText}</p>
+                  <p class="text-sm text-slate-700 font-semibold truncate max-w-[225px]">${topicText}</p>
                 </div>
               </div>
               <div class="text-right">
@@ -689,9 +703,9 @@
 
         // Large card advances the step; secondary actions remain compact.
         html += `
-          <div class="flex justify-end items-center gap-2 -mt-1 pb-0.5">
-            <button onclick="openSplitMemoModal('${cls}', ${curSessionNo})" class="text-[11px] font-bold text-slate-600 rounded-lg px-2 py-1 bg-white/70 border border-slate-200" aria-label="${cls} 메모">메모</button>
-            <button onclick="rollbackClassStep('${cls}')" class="text-[11px] font-bold text-slate-600 rounded-lg px-2 py-1 bg-white/70 border border-slate-200" aria-label="${cls} 되돌아가기">되돌아가기</button>
+          <div class="flex justify-end items-center gap-2 mt-0.5 pb-0.5">
+            <button onclick="openSplitMemoModal('${cls}', ${curSessionNo})" class="text-sm font-bold text-slate-700 rounded-lg px-3 py-2 min-h-[40px] bg-white border border-slate-300" aria-label="${cls} 메모">메모</button>
+            <button onclick="rollbackClassStep('${cls}')" class="text-sm font-bold text-slate-700 rounded-lg px-3 py-2 min-h-[40px] bg-white border border-slate-300" aria-label="${cls} 되돌아가기">되돌아가기</button>
           </div>
         `;
         html += `</div>`;
@@ -1182,6 +1196,10 @@
     function openSettingsModal() {
       document.getElementById('setTeacherName').value = appState.teacherName;
       document.getElementById('setSubjectName').value = appState.subjectName;
+      const labels = getStepLabels();
+      document.getElementById('setStepDist').value = labels.dist;
+      document.getElementById('setStepSolve').value = labels.solve;
+      document.getElementById('setStepCheck').value = labels.check;
       document.getElementById('settingsModal').classList.remove('hidden');
       lucide.createIcons();
     }
@@ -1193,6 +1211,7 @@
     function saveSettingsConfig() {
       appState.teacherName = document.getElementById('setTeacherName').value.trim() || '선생님';
       appState.subjectName = document.getElementById('setSubjectName').value.trim() || '공통교과';
+      appState.stepLabels = {dist: document.getElementById('setStepDist').value.trim() || '배포', solve: document.getElementById('setStepSolve').value.trim() || '풀이', check: document.getElementById('setStepCheck').value.trim() || '검사'};
 
       saveState();
       updateHeader();
