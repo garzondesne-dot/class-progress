@@ -1,6 +1,6 @@
 {
-  "appId": "io.github.garzondesnedot.classprogress",
-  "appName": "수업진도",
+  "appId": "io.github.garzondesnedot.classprogress.connected",
+  "appName": "수업진도 연동",
   "webDir": "www",
   "server": {
     "androidScheme": "https"

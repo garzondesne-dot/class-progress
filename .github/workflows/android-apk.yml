@@ -31,15 +31,29 @@ jobs:
           ls "$ANDROID_HOME/platforms"
       - name: Install dependencies
         run: npm install
+      - name: Validate application
+        run: node identity.test.mjs
+      - name: Compile offline styles
+        run: |
+          printf '@tailwind base;\n@tailwind components;\n@tailwind utilities;\n' > utilities-input.css
+          npx tailwindcss -i utilities-input.css -o utilities.css --content index.html --minify
+      - name: Download bundled offline assets
+        run: |
+          curl -fL --retry 3 https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js -o lucide.min.js
+          curl -fL --retry 3 https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js -o xlsx.full.min.js
       - name: Copy web app
         run: |
           mkdir -p www
           cp index.html www/index.html
           cp apk-native-ui.js www/apk-native-ui.js
+          cp firebase-messaging-sw.js www/firebase-messaging-sw.js
+          cp lucide.min.js xlsx.full.min.js www/
           python3 - <<'PY'
           from pathlib import Path
           p=Path('www/index.html')
           s=p.read_text()
+          s=s.replace('<script src="https://cdn.tailwindcss.com"></script>', '<style>'+Path('utilities.css').read_text()+'</style>')
+          s=s.replace('https://unpkg.com/lucide@latest', './lucide.min.js').replace('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js','./xlsx.full.min.js')
           s=s.replace('</body>', '<script src="./apk-native-ui.js"></script></body>')
           p.write_text(s)
           PY
@@ -58,6 +72,12 @@ jobs:
           name: class-progress-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
+      - uses: actions/upload-artifact@v4
+        with:
+          name: class-progress-web-offline
+          path: www/
+          retention-days: 30
+
       - name: Publish downloadable APK release
         if: github.ref == 'refs/heads/main'
         env:
@@ -66,5 +86,7 @@ jobs:
           TAG="apk-build-${{ github.run_number }}"
           gh release create "$TAG" android/app/build/outputs/apk/debug/app-debug.apk#class-progress-debug.apk \
             --title "수업진도 APK 빌드 ${{ github.run_number }}" \
-            --notes "테스트용 Android APK입니다. 기존 설치본을 유지한 채 업데이트할 수 있습니다. Android 로컬 수업 알림 예약 기능을 포함합니다. 알림 및 정확한 알람 권한을 허용하세요." \
+            --notes "테스트용 Android APK입니다. 기존 앱과 별도로 설치됩니다. 기존 기록은 JSON 백업 후 새 앱에서 복구하세요. Android 로컬 수업 알림 예약 기능을 포함합니다. 알림 및 정확한 알람 권한을 허용하세요." \
             --latest
+
+

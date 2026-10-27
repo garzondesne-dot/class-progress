@@ -8,7 +8,7 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = {
+    window.tailwind=window.tailwind||{}; tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
@@ -93,6 +93,9 @@
     .compact-detail .flex{flex-wrap:wrap}.compact-detail .flex button{min-height:44px}
 .alarm-time-row{display:grid;grid-template-columns:48px minmax(0,1fr) 12px minmax(0,1fr);gap:6px;align-items:center;width:100%;font-size:14px}.alarm-time-row input[type=time]{width:100%;min-width:0;max-width:100%;font-size:15px;padding:10px 4px;border:1px solid #cbd5e1;border-radius:9px;background:white;color:#0f172a;box-sizing:border-box}.alarm-time-row b{white-space:nowrap}
 .compact-lesson-wrap{position:relative;min-width:0;display:flex;align-items:stretch}.compact-lesson-wrap .compact-lesson{width:100%;padding-right:50px!important}.compact-expand-btn{position:absolute;right:5px;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:10px;background:#eef2ff;color:#4338ca;z-index:2}
+</style><style>
+.mode-selector{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.mode-selector button{padding:14px;border:2px solid #cbd5e1;border-radius:14px;text-align:left;background:#f8fafc;color:#334155}.mode-selector button[aria-pressed=true]{border-color:#4f46e5;background:#eef2ff;color:#3730a3}.mode-selector span,.comci-announcement small{display:block;font-size:12px;margin-top:6px;line-height:1.5}.comci-announcement{padding:14px;border-radius:12px;background:#eff6ff;color:#1e40af;margin-bottom:16px;font-size:14px}.offline-form label{display:block;margin-top:13px;font-weight:700}.offline-form input{display:block;width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:9px;color:#0f172a;background:white}.offline-form p,.settings-identity p{font-size:12px;line-height:1.6;margin:10px 0}.offline-start,.restore-start,.restore-settings,.settings-identity button{padding:12px;border-radius:10px;background:#4f46e5;color:white;font-weight:700;margin-top:10px}.restore-start,.restore-settings{background:#e0e7ff;color:#3730a3;width:100%}.settings-identity{padding:12px;border:1px solid #c7d2fe;border-radius:12px}.compact-meta-row{display:flex;align-items:center;justify-content:space-between;gap:5px;flex-wrap:wrap}.compact-status{display:inline-flex!important;border-radius:999px;padding:3px 7px;background:#ffffffb3;color:#1e293b!important;border:1px solid #94a3b84d;font-size:11px!important;white-space:nowrap}.compact-session{font-size:14px!important}.compact-topic{font-size:21px!important}.compact-detail-row{grid-column:1/-1;display:grid;grid-template-columns:44px minmax(0,.56fr) minmax(0,3.5fr) minmax(0,.56fr);gap:5px}.compact-detail{grid-column:3!important;min-width:0;padding:10px!important;overflow-wrap:anywhere}.compact-detail>strong{font-size:12px;line-height:1.5}.detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}.detail-actions button{min-width:0;padding:11px 5px!important;font-size:12px}.detail-actions button:first-child{grid-column:1/-1;background:#2563eb!important;color:white}.compact-detail-summary strong{font-size:23px}.lesson-change{font-size:10px}.data-dialog{position:fixed;inset:0;background:#0f172a99;z-index:5000;display:flex;align-items:center;justify-content:center;padding:20px}.data-dialog.hidden{display:none!important}.data-dialog>div{max-width:440px;width:100%;padding:24px;border-radius:20px;background:#fff;color:#0f172a;box-shadow:0 20px 60px #0004}.data-dialog h2{font-size:21px;font-weight:800;margin-bottom:12px}.data-dialog p{font-size:14px;line-height:1.7;margin:10px 0}.data-dialog input{width:100%;border:1px solid #94a3b8;border-radius:8px;padding:10px;margin:10px 0}.data-dialog button{border-radius:8px;padding:11px;background:#e2e8f0;margin:5px}.data-dialog button.confirm{background:#2563eb;color:white}.data-dialog button.danger{background:#dc2626;color:white}.hidden{display:none!important}
+html.apk-dark .compact-status,html.web-dark .compact-status{background:#ffffff26;color:inherit!important}
 </style>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex justify-center selection:bg-indigo-100">
@@ -129,83 +132,38 @@
     </header>
 
     <!-- ================= 화면 1: 온보딩 초기 설정 (최초 1회) ================= -->
-    <div id="screen-onboarding" class="flex-1 flex flex-col p-5 overflow-y-auto hidden">
-      <div class="my-auto py-2">
-        <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-brand-600 flex items-center justify-center mx-auto mb-3 shadow-sm border border-brand-100">
-          <i data-lucide="sparkles" class="w-7 h-7"></i>
-        </div>
-        <h2 class="text-2xl font-black text-center text-slate-900">수업진도 시작 설정</h2>
-        <p class="text-xs text-center text-slate-500 mt-1 mb-5">선생님의 수업 환경에 맞게 기본 정보를 입력해 주세요.<br>(언제든 설정에서 수정 가능합니다)</p>
-
-        <form id="onboardingForm" onsubmit="handleOnboardingSubmit(event)" class="space-y-4 text-xs font-semibold text-slate-700">
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block mb-1 text-slate-600">선생님 성함</label>
-              <input type="text" id="obTeacherName" required placeholder="김선생" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="block mb-1 text-slate-600">담당 과목</label>
-              <input type="text" id="obSubjectName" required placeholder="공통수학 / 국어" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block mb-1 text-slate-600">학기 선택</label>
-              <select id="obSemester" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white">
-                <option value="1학기">1학기</option>
-                <option value="2학기">2학기</option>
-                <option value="여름방학">여름방학</option>
-                <option value="겨울방학">겨울방학</option>
-              </select>
-            </div>
-            <div>
-              <label class="block mb-1 text-slate-600">주당 차시 수</label>
-              <select id="obWeeklyCount" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white">
-                <option value="1">주 1회</option>
-                <option value="2">주 2회</option>
-                <option value="3" selected>주 3회</option>
-                <option value="4">주 4회</option>
-                <option value="5">주 5회</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- 학년 선택 칩 -->
-          <div>
-            <label class="block mb-1 text-slate-600">학년 선택 (복수 선택 가능)</label>
-            <div class="flex gap-2" id="obGradeChips">
-              <button type="button" onclick="toggleChip(this)" data-val="1" class="chip active flex-1 py-2 rounded-xl border text-center font-bold transition bg-brand-600 text-white border-brand-600">1학년</button>
-              <button type="button" onclick="toggleChip(this)" data-val="2" class="chip flex-1 py-2 rounded-xl border text-center font-bold transition bg-white text-slate-700 border-slate-200">2학년</button>
-              <button type="button" onclick="toggleChip(this)" data-val="3" class="chip flex-1 py-2 rounded-xl border text-center font-bold transition bg-white text-slate-700 border-slate-200">3학년</button>
-            </div>
-          </div>
-
-          <!-- 담당 반 선택 칩 -->
-          <div>
-            <label class="block mb-1 text-slate-600">담당 반 선택 (누르면 활성화/비활성화)</label>
-            <div class="grid grid-cols-4 gap-2" id="obClassChips">
-              <button type="button" onclick="toggleChip(this)" data-val="1" class="chip active py-2 rounded-xl border text-center font-bold transition bg-brand-600 text-white border-brand-600">1반</button>
-              <button type="button" onclick="toggleChip(this)" data-val="2" class="chip active py-2 rounded-xl border text-center font-bold transition bg-brand-600 text-white border-brand-600">2반</button>
-              <button type="button" onclick="toggleChip(this)" data-val="3" class="chip active py-2 rounded-xl border text-center font-bold transition bg-brand-600 text-white border-brand-600">3반</button>
-              <button type="button" onclick="toggleChip(this)" data-val="4" class="chip active py-2 rounded-xl border text-center font-bold transition bg-brand-600 text-white border-brand-600">4반</button>
-              <button type="button" onclick="toggleChip(this)" data-val="5" class="chip active py-2 rounded-xl border text-center font-bold transition bg-brand-600 text-white border-brand-600">5반</button>
-              <button type="button" onclick="toggleChip(this)" data-val="6" class="chip py-2 rounded-xl border text-center font-bold transition bg-white text-slate-700 border-slate-200">6반</button>
-              <button type="button" onclick="toggleChip(this)" data-val="7" class="chip py-2 rounded-xl border text-center font-bold transition bg-white text-slate-700 border-slate-200">7반</button>
-              <button type="button" onclick="toggleChip(this)" data-val="8" class="chip py-2 rounded-xl border text-center font-bold transition bg-white text-slate-700 border-slate-200">8반</button>
-            </div>
-          </div>
-
-          <button type="submit" class="w-full mt-4 py-3.5 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-black text-base rounded-2xl shadow-lg shadow-brand-500/30 transition flex items-center justify-center gap-2">
-            <span>체크리스트 시작하기</span>
-            <i data-lucide="arrow-right" class="w-5 h-5"></i>
-          </button>
-        </form>
-      </div>
-    </div>
-
+<section id="screen-identitySetup" class="hidden flex-1 p-5"><div class="max-w-lg mx-auto py-6 space-y-5">
+<div class="text-blue-700 text-sm font-bold">수업진도 · 새로운 시작 설정</div>
+<h1 class="text-2xl font-black text-slate-900">학교와 선생님을 선택하세요</h1>
+<p class="text-sm text-slate-600">선택한 선생님의 시간표를 자동으로 배치하고, 변경된 수업을 갱신합니다. 기존 사용자도 한 번 다시 선택해 주세요.</p>
+<p id="identityPreservation" class="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-sm text-emerald-900"></p>
+<div class="mode-selector"><button id="modeOnline" type="button" onclick="chooseSetupMode('online')" aria-pressed="true"><b>컴시간 연동</b><span>학교·선생님 선택 후 자동 배치</span></button><button id="modeOffline" type="button" onclick="chooseSetupMode('offline')" aria-pressed="false"><b>오프라인 사용</b><span>컴시간 없이 직접 설정</span></button></div>
+<div class="comci-announcement"><b>컴시간 연동! 이제 실시간으로 시간표가 변경됩니다. 확인해보세요!</b><small>연동 모드에서 앱을 열거나 돌아올 때, 그리고 5분마다 변경을 확인합니다.</small></div>
+<div id="identityOnlineFields">
+<form onsubmit="event.preventDefault();lookupIdentitySchool()" class="space-y-2">
+<label for="identitySchoolCode" class="block font-bold text-sm">1. 학교 선택</label>
+<div class="flex gap-2"><input id="identitySchoolCode" inputmode="numeric" autocomplete="off" pattern="[0-9]{4,7}" required placeholder="컴시간 학교 코드" oninput="invalidateIdentitySchool()" class="flex-1 min-w-0 rounded-xl border border-slate-300 px-3 py-3 text-base"><button id="identityLookup" type="submit" class="bg-blue-700 text-white px-4 py-3 rounded-xl font-bold">학교 확인</button></div>
+<p class="text-xs text-slate-500">컴시간 알리미의 ‘학교코드’에서 확인할 수 있습니다.</p></form>
+<p id="identitySchoolSummary" class="font-bold text-sm text-blue-800"></p>
+<div class="space-y-2"><label for="identityTeacher" class="block font-bold text-sm">2. 선생님 선택</label><select id="identityTeacher" disabled onchange="selectIdentityTeacher()" class="w-full border border-slate-300 rounded-xl px-3 py-3 text-base"><option value="">학교를 먼저 확인해 주세요</option></select><p class="text-xs text-slate-500">이름 일부가 가려져 있으면 교사 번호도 함께 확인하세요.</p></div>
+<p id="identityStatus" role="status" aria-live="polite" class="text-sm text-slate-600"></p>
+<button id="identityContinue" type="button" disabled onclick="confirmIdentitySelection()" class="w-full bg-blue-700 disabled:opacity-40 text-white font-bold rounded-xl px-4 py-4">내 시간표로 시작하기</button>
+</div>
+<div id="identityOfflineFields" class="hidden offline-form">
+<label for="offlineSchool">학교명 <small>(선택)</small></label><input id="offlineSchool" maxlength="100" placeholder="학교 이름">
+<label for="offlineName">선생님 이름</label><input id="offlineName" maxlength="40" placeholder="선생님 성함">
+<label for="offlineSubject">담당 과목</label><input id="offlineSubject" maxlength="60" placeholder="예: 수학">
+<label for="offlineClasses">담당 반</label><input id="offlineClasses" placeholder="예: 1-1, 1-2, 2-3">
+<p>반은 쉼표로 구분해 입력하세요. 시간표는 시작 후 ⏰ 시간표에서 직접 배치할 수 있습니다.</p>
+<button class="offline-start" type="button" onclick="startOfflineIdentity()">오프라인으로 시작하기</button>
+<p id="offlineAvailability">컴시간 연결 없이 사용할 수 있습니다. 인터넷이 없는 곳에서 다시 열려면 온라인 접속 중 앱 화면 저장이 먼저 완료되어야 합니다.</p>
+</div>
+<button type="button" class="restore-start" onclick="requestBackupRestore()">백업 파일에서 이어서 사용하기</button>
+<button id="identityCancel" type="button" onclick="cancelIdentitySelection()" class="hidden w-full text-slate-600 py-3">현재 선생님으로 돌아가기</button>
+<p class="text-xs text-slate-500">진도·메모는 이 기기와 브라우저에 저장됩니다. 선생님 선택은 본인 인증이나 다른 기기와의 기록 동기화가 아닙니다.</p>
+</div></section>
     <!-- ================= 화면 2: 메인 화면 ([진도확인하기] + [진도입력하기]) ================= -->
-    <div id="screen-main" class="flex-1 flex flex-col p-3 gap-2 overflow-y-auto">
+    <div id="screen-main" class="hidden flex-1 flex flex-col p-3 gap-2 overflow-y-auto">
       
       <!-- 상단 가장 큰 버튼: [진도확인하기] -->
       <button onclick="navigateTo('matrixDashboard')" class="w-full p-3 min-h-[88px] bg-gradient-to-br from-indigo-700 via-brand-600 to-indigo-900 active:scale-[0.98] text-white rounded-3xl shadow-xl shadow-indigo-600/25 transition relative overflow-hidden group text-left">
@@ -230,10 +188,11 @@
             <span class="w-2.5 h-4.5 rounded-full bg-brand-600"></span>
             <h3 class="text-base font-black text-slate-900">진도 입력하기</h3>
           </div>
-          <span class="text-[11px] text-slate-400 font-bold">교시 선택 → 아래에서 진도 입력</span>
+          <span class="text-[11px] text-slate-400 font-bold">터치하여 진도 넘어가기 · ∨ 상세보기</span>
         </div>
 
         <!-- 각 반 카드 목록 (원터치 전환 및 하단 [풀이][메모][되돌아가기] 액션 버튼 포함) -->
+<p id="comciMainStatus" class="text-[11px] text-blue-700 px-1 mb-1" role="status"></p>
         <div id="mainClassList" class="flex flex-col gap-1.5">
           <!-- 동적으로 renderMainClassList()에서 렌더링 -->
         </div>
@@ -314,6 +273,10 @@
         </div>
 
         <div class="p-4 overflow-y-auto space-y-4 text-xs">
+<div class="rounded-xl border border-blue-200 bg-blue-50 p-3 space-y-2"><h4 class="font-black text-blue-900 text-sm">내 학교·선생님</h4><p id="identityCurrent" class="text-sm font-bold"></p>
+<button onclick="openIdentitySetup()" class="bg-white border border-blue-200 rounded-lg px-3 py-2">학교·선생님 다시 선택</button><button onclick="refreshComci(true)" class="bg-blue-700 text-white rounded-lg px-3 py-2">지금 업데이트</button>
+<label class="flex items-center gap-2"><input id="comciAuto" type="checkbox" onchange="toggleComciAuto()">자동 업데이트 · 앱이 열린 동안 5분마다 확인</label>
+<p id="comciStatus" class="text-xs" role="status"></p><p class="text-xs text-slate-500">통신이 끊기면 마지막 수신 시간표를 유지합니다. 학교·선생님별 진도와 메모는 이 기기에 따로 보관됩니다.</p></div>
           <!-- 알림 작동 타이밍 및 권한 -->
           <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
             <div class="flex items-center justify-between">
@@ -443,7 +406,7 @@
           </button>
         </div>
 
-        <div class="p-4 overflow-y-auto space-y-4 text-xs font-semibold text-slate-700">
+        <div class="p-4 overflow-y-auto space-y-4 text-xs font-semibold text-slate-700"><div class="settings-identity"><strong>사용 모드와 선생님</strong><p>컴시간 연동·오프라인 사용을 바꾸거나 다른 선생님을 선택할 수 있습니다. 기존 프로필의 진도와 메모는 보관됩니다.</p><button type="button" onclick="openIdentitySetup()">학교·선생님 / 모드 다시 선택</button></div>
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block mb-1 text-slate-600">선생님 이름</label>
@@ -471,6 +434,7 @@
               <label class="text-xs" id="stepLabelCheck">3단계<input id="setStepCheck" maxlength="12" class="mt-1 w-full min-w-0 p-2 rounded-lg border border-slate-200 text-sm" placeholder="검사"></label>
             </div>
           </div>
+<button type="button" class="restore-settings" onclick="requestBackupRestore()">백업 파일 복구</button><p id="dataStatus" role="status" aria-live="polite" class="text-xs"></p>
           <hr class="border-slate-100">
 
           <div>
@@ -482,7 +446,7 @@
               </button>
               <button onclick="exportJsonBackup()" class="p-2.5 rounded-xl bg-indigo-50 text-indigo-800 hover:bg-indigo-100 border border-indigo-200 font-black flex items-center justify-center gap-1.5 transition">
                 <i data-lucide="download" class="w-4 h-4 text-indigo-600"></i>
-                <span>JSON 백업 파일</span>
+                <span>전체 데이터 백업</span>
               </button>
             </div>
           </div>
@@ -551,12 +515,10 @@
       loadState();
       lucide.createIcons();
 
-      if (!appState.isConfigured) {
-        showScreen('onboarding');
+      if (needsIdentitySetup()) {
+        openIdentitySetup();
       } else {
-        updateHeader();
-        showScreen('main');
-        renderMainClassList();
+        updateHeader();showScreen('main');renderMainClassList();
       }
       initTimetableAlarmChecker();
     });
@@ -613,7 +575,7 @@
     }
 
     function showScreen(screenId) {
-      ['onboarding', 'main', 'matrixDashboard'].forEach(id => {
+      ['identitySetup', 'main', 'matrixDashboard'].forEach(id => {
         const el = document.getElementById(`screen-${id}`);
         if (el) el.classList.add('hidden');
       });
@@ -706,8 +668,8 @@
       d.setDate(d.getDate() - ((d.getDay()+6)%7) + weekOffset*7);
       return DAYS.map((_,i)=>{const v=new Date(d);v.setDate(d.getDate()+i);return v;});
     }
-    function selectDay(i) { selectedDay=i;expandedLesson=null;renderMainClassList(); }
-    function changeWeek(n) { weekOffset+=n;expandedLesson=null;renderMainClassList(); }
+    function selectDay(i) { selectedDay=i;expandedLesson=null;renderMainClassList();refreshComci(); }
+    function changeWeek(n) { weekOffset+=n;expandedLesson=null;renderMainClassList();refreshComci(true); }
     function toggleLesson(key) { expandedLesson=expandedLesson===key?null:key;renderMainClassList(); }
     function advanceLesson(cls, period) {
       handleMainClassButtonClick(cls);
@@ -735,22 +697,22 @@
         html+=`<div class="period-label"><strong>${period}교시</strong><small>${starts[period-1]}</small></div>`;
         visible.forEach((i,k)=>{
           if(i<0||i>4){html+='<div class="compact-side-slot"></div>';return;}
-          const day=DAYS[i],cls=appState.timetable[day+'-'+period],key=i+'-'+period,active=i===selectedDay;
-          if(!cls){html+=active?'<div class="compact-empty">수업 없음</div>':'<div class="compact-side-slot"></div>';return;}
+          const day=DAYS[i],cls=getTimetableClass(localDate(dates[i]),period),key=i+'-'+period,active=i===selectedDay;
+          if(!cls){html+=active?'<div class="compact-empty">'+(appState.currentIdentity&&appState.currentIdentity.mode!=='offline'&&!getComciLesson(localDate(dates[i]),period)?'시간표 미수신':'수업 없음')+'</div>':'<div class="compact-side-slot"></div>';return;}
           const data=appState.progress[cls];
           if(!data){html+=`<div class="compact-side-slot">${escapeHtml(cls)}</div>`;return;}
           const no=data.currentSession||1,step=data.currentStep||'none',labels=getStepLabels();
           if(!active){html+=`<button onclick="selectDay(${i})" class="compact-side-slot step-${step}" aria-label="${day} ${period}교시 ${escapeHtml(cls)}">${escapeHtml(cls)}<span class="side-dot"></span></button>`;return;}
-          html+=`<div class="compact-lesson-wrap"><button onclick="advanceLesson('${cls}',${period})" aria-label="${escapeHtml(cls)} ${no}차시 진도 나가기" class="compact-lesson step-${step}"><span class="compact-session">${escapeHtml(cls)} · ${no}차시</span><strong class="compact-topic">${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}</strong><span class="compact-status">${step==='none'?'대기':escapeHtml(labels[step]||step)}</span></button><button type="button" onclick="toggleLesson('${key}')" aria-expanded="${expandedLesson===key}" aria-label="${period}교시 상세 ${expandedLesson===key?'접기':'펼치기'}" class="compact-expand-btn"><i data-lucide="${expandedLesson===key?'chevron-up':'chevron-down'}" class="w-5 h-5"></i></button></div>`;
+          html+=`<div class="compact-lesson-wrap"><button onclick="advanceLesson('${cls}',${period})" aria-label="${escapeHtml(cls)} ${no}차시 진도 나가기" class="compact-lesson step-${step}"><div class="compact-meta-row"><span class="compact-session">${escapeHtml(cls)}</span><span class="compact-status">${no}차시-${step==='none'?'대기':escapeHtml(labels[step]||step)}</span></div><strong class="compact-topic">${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}</strong>${getComciLesson(localDate(dates[i]),period)?.changed?'<small class="lesson-change">컴시간 변경</small>':''}</button><button type="button" onclick="toggleLesson('${key}')" aria-expanded="${expandedLesson===key}" aria-label="${period}교시 상세 ${expandedLesson===key?'접기':'펼치기'}" class="compact-expand-btn"><i data-lucide="${expandedLesson===key?'chevron-up':'chevron-down'}" class="w-5 h-5"></i></button></div>`;
         });
         if(expandedLesson===selectedDay+'-'+period){
-          const cls=appState.timetable[DAYS[selectedDay]+'-'+period],data=appState.progress[cls];
+          const cls=getTimetableClass(localDate(dates[selectedDay]),period),data=appState.progress[cls];
           if(data){const r=data.sessions[data.currentSession]||{},no=data.currentSession||1,step=data.currentStep||'none',labels=getStepLabels();
-            html+=`<div class="lesson-detail compact-detail"><strong>${localDate(dates[selectedDay])} (${DAYS[selectedDay]}) · ${period}교시 ${starts[period-1]}–${getAlarmTimes()[period-1]}</strong><div class="compact-detail-summary"><span>${escapeHtml(cls)} · ${no}차시</span><strong>${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}</strong><small>${step==='none'?'대기':escapeHtml(labels[step]||step)}</small></div><p>기록: ${escapeHtml(r.date||'미기록')}</p><div class="flex gap-2 mt-2"><button class="bg-blue-600 text-white rounded-lg px-3 py-3 font-bold flex-1" onclick="advanceLesson('${cls}',${period})"><i data-lucide="play" class="inline-block w-4 h-4 align-middle mr-1"></i>진도 나가기</button><button class="bg-white border rounded-lg px-3 py-3" onclick="openSplitMemoModal('${cls}',${no})"><i data-lucide="notebook-pen" class="inline-block w-4 h-4 align-middle mr-1"></i>메모</button><button class="bg-emerald-600 text-white rounded-lg px-3 py-3" onclick="rollbackClassStep('${cls}')"><i data-lucide="undo-2" class="inline-block w-4 h-4 align-middle mr-1"></i>진도 되돌아가기</button></div></div>`;
+            html+=`<div class="compact-detail-row"><div class="lesson-detail compact-detail"><strong>${localDate(dates[selectedDay])} (${DAYS[selectedDay]}) · ${period}교시 ${starts[period-1]}–${getAlarmTimes()[period-1]}</strong><div class="compact-detail-summary"><span>${escapeHtml(cls)} · ${no}차시</span><strong>${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}</strong><small>${step==='none'?'대기':escapeHtml(labels[step]||step)}</small></div><p>컴시간 과목: ${escapeHtml(getComciLesson(localDate(dates[selectedDay]),period)?.subject||'직접 설정')}</p><p>기록: ${escapeHtml(r.date||'미기록')}</p><div class="detail-actions"><button class="bg-blue-600 text-white rounded-lg px-3 py-3 font-bold flex-1" onclick="advanceLesson('${cls}',${period})"><i data-lucide="play" class="inline-block w-4 h-4 align-middle mr-1"></i>진도 나가기</button><button class="bg-white border rounded-lg px-3 py-3" onclick="openSplitMemoModal('${cls}',${no})"><i data-lucide="notebook-pen" class="inline-block w-4 h-4 align-middle mr-1"></i>메모</button><button class="bg-emerald-600 text-white rounded-lg px-3 py-3" onclick="rollbackClassStep('${cls}')"><i data-lucide="undo-2" class="inline-block w-4 h-4 align-middle mr-1"></i>되돌아가기</button></div></div></div>`;
           }
         }
       }
-      container.innerHTML=html+'</div>';lucide.createIcons();
+      container.innerHTML=html+'</div>';lucide.createIcons();renderComciStatus();
     }
 
     // 메인 반 카드 본체 클릭 시: 미시작이면 즉시 [배포]로 전환!
@@ -943,7 +905,7 @@
       // 4. Tbody 행 구성 (셀 클릭 시 표 확장)
       let tbodyHtml = '';
       for (let s = 1; s <= maxSession; s++) {
-        const topicText = appState.sessionTopics[s] ? `<span class="block text-[9px] text-slate-400 font-normal truncate max-w-[75px]">${appState.sessionTopics[s]}</span>` : '';
+        const topicText = appState.sessionTopics[s] ? `<span class="block text-[9px] text-slate-400 font-normal truncate max-w-[75px]">${escapeHtml(appState.sessionTopics[s])}</span>` : '';
         
         tbodyHtml += `<tr class="hover:bg-slate-50/70 transition">`;
         tbodyHtml += `
@@ -993,7 +955,7 @@
                     <div class="flex items-center justify-between border-b border-indigo-200 pb-1.5">
                       <div class="flex items-center gap-2">
                         <span class="text-xs font-black text-brand-900">[확장 상세] ${c} - ${s}차시 진도 일지</span>
-                        <span class="text-[11px] text-slate-500"><button onclick="deleteSessionRecord('${c}', ${s})" class="rounded-lg bg-rose-600 text-white text-[11px] font-bold px-2 py-1">이 차시 기록 삭제</button> 수업일시: <strong>${sData.date || '미기록'}</strong></span>
+                        <span class="text-[11px] text-slate-500"><button onclick="deleteSessionRecord('${c}', ${s})" class="rounded-lg bg-rose-600 text-white text-[11px] font-bold px-2 py-1">이 차시 기록 삭제</button> 수업일시: <strong>${escapeHtml(sData.date || '미기록')}</strong></span>
                       </div>
                       <button onclick="toggleExpandRow('${rowKey}')" class="text-xs text-brand-700 font-bold hover:underline">▲ 접기</button>
                     </div>
@@ -1002,15 +964,15 @@
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                       <div class="p-2 bg-white rounded-xl border border-cyan-200">
                         <span class="font-bold text-cyan-800 block mb-0.5">📦 [배포 메모]</span>
-                        <p class="text-[11px] text-slate-600">${sData.memoDist || '<span class="text-slate-300">메모 없음</span>'}</p>
+                        <p class="text-[11px] text-slate-600">${sData.memoDist ? escapeHtml(sData.memoDist) : '<span class="text-slate-300">메모 없음</span>'}</p>
                       </div>
                       <div class="p-2 bg-white rounded-xl border border-amber-200">
                         <span class="font-bold text-amber-800 block mb-0.5">✏️ [풀이 메모 (멈춘 지점)]</span>
-                        <p class="text-[11px] text-slate-600">${sData.memoSolve || '<span class="text-slate-300">메모 없음</span>'}</p>
+                        <p class="text-[11px] text-slate-600">${sData.memoSolve ? escapeHtml(sData.memoSolve) : '<span class="text-slate-300">메모 없음</span>'}</p>
                       </div>
                       <div class="p-2 bg-white rounded-xl border border-blue-200">
                         <span class="font-bold text-blue-800 block mb-0.5">✅ [검사 메모 (제출/도장)]</span>
-                        <p class="text-[11px] text-slate-600">${sData.memoCheck || '<span class="text-slate-300">메모 없음</span>'}</p>
+                        <p class="text-[11px] text-slate-600">${sData.memoCheck ? escapeHtml(sData.memoCheck) : '<span class="text-slate-300">메모 없음</span>'}</p>
                       </div>
                     </div>
                   </div>
@@ -1040,6 +1002,7 @@
 
     // --- 6. [⏰ 시간표] 모달 관리 및 교시별 반 배정 ---
     function openTimetableModal() {
+      renderComciSettings();
       renderTimetableTable();
       renderAlarmTimeSettings();
       document.getElementById('timetableModal').classList.remove('hidden');
@@ -1139,12 +1102,14 @@
       n.onclick=()=>{openClass();n.close();};
     }
     function checkTimetableAlarm() {
+      if(needsIdentitySetup())return;
       if (window.isNativeClassApp?.() || !('Notification' in window) || Notification.permission !== 'granted') return;
       const now=new Date(),day=['일','월','화','수','목','금','토'][now.getDay()];
       if(day==='토'||day==='일')return;
       const minute=now.getHours()*60+now.getMinutes(),today=localDate(now);
       getAlarmTimes().forEach((end,i)=>{
-        const cls=appState.timetable[day+'-'+(i+1)];if(!cls)return;
+        if(appState.currentIdentity&&appState.currentIdentity.mode!=='offline' && !getComciLesson(today,i+1))return;
+        const cls=getTimetableClass(today,i+1);if(!cls)return;
         const elapsed=minute-minutes(end);
         // Allow a short grace period after browser suspension; do not send stale reminders.
         if(elapsed<0||elapsed>5)return;
@@ -1194,13 +1159,15 @@
         const pending=await plugin.getPending();
         const old=pending.notifications.filter(n=>n.id>=100000&&n.id<200000).map(n=>({id:n.id}));
         if(old.length)await plugin.cancel({notifications:old});
+        if(needsIdentitySetup())return;
         const ends=getAlarmTimes(),items=[],now=new Date();
         for(let offset=0;offset<21;offset++){
           const day=new Date(now.getFullYear(),now.getMonth(),now.getDate()+offset);
           const dayIndex=day.getDay();if(dayIndex===0||dayIndex===6)continue;
           const dayName=['일','월','화','수','목','금','토'][dayIndex];
           for(let i=0;i<7;i++){
-            const cls=appState.timetable[dayName+'-'+(i+1)];
+            if(appState.currentIdentity&&appState.currentIdentity.mode!=='offline' && !getComciLesson(localDate(day),i+1))continue;
+            const cls=getTimetableClass(localDate(day),i+1);
             if(!cls)continue;
             const parts=ends[i].split(':').map(Number);
             const at=new Date(day.getFullYear(),day.getMonth(),day.getDate(),parts[0],parts[1]);
@@ -1230,6 +1197,8 @@
 
     // --- 7. EXCEL (.XLSX) 다운로드 기능 ---
     function exportExcelFile() {
+      if(typeof XLSX==='undefined'){alert('엑셀 저장 기능을 불러오지 못했습니다. 전체 데이터 백업은 인터넷 없이도 사용할 수 있습니다.');return;}
+
       try {
         const wb = XLSX.utils.book_new();
 
@@ -1334,21 +1303,380 @@
       renderMainClassList();
     }
 
-    function exportJsonBackup() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `수업진도_백업_${appState.subjectName}_${new Date().toISOString().slice(0,10)}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    }
-
-    function resetAllDataConfirm() {
-      localStorage.removeItem(STORAGE_KEY);
-      location.reload();
-    }
+    function exportJsonBackup() { downloadBackup(); }
+    function resetAllDataConfirm() { requestFullReset(); }
   </script>
+<script>
+/* Identity onboarding v1. Live progress remains local to this browser. */
+const COMCI_BASE='https://class-progress-comci.garzondesne.workers.dev';
+const IDENTITY_VERSION=1;
+const PROFILE_FIELDS=['teacherName','subjectName','semester','weeklyCount','grades','classes','sessionTopics','timetable','progress','alarmTimes','periodStarts','stepCount','stepLabels','comci'];
+let identitySchool=null,identityRequest=0,identitySubmitting=false;
+let comciBusy=false,comciRevision=0,comciMessage='',comciLastAttempt=0;
+function cloneData(value){return JSON.parse(JSON.stringify(value));}
+function identityKey(school,id,label){return school+':'+id+':'+encodeURIComponent(label);}
+function packProfile(state){const result={};for(const k of PROFILE_FIELDS)if(state[k]!==undefined)result[k]=cloneData(state[k]);return result;}
+function needsIdentitySetup(state=appState){return state.identitySetupVersion!==IDENTITY_VERSION||!state.currentIdentity;}
+function comciConfig(){return appState.comci||{enabled:false,weeks:{}};}
+function comciWeek(date){const d=new Date(date+'T12:00:00');d.setDate(d.getDate()-((d.getDay()+6)%7));return localDate(d);}
+function getComciLesson(date,period){const c=comciConfig();return appState.currentIdentity&&appState.currentIdentity.mode!=='offline'?c.weeks?.[comciWeek(date)]?.dates?.[date]?.[period]??null:null;}
+function getTimetableClass(date,period){
+ const c=comciConfig(),lesson=getComciLesson(date,period);
+ if(lesson)return lesson.classKey||'';
+ // Connected dates that have not been published are unknown, never a repeated base week.
+ if(appState.currentIdentity&&appState.currentIdentity.mode!=='offline')return '';
+ const day=['일','월','화','수','목','금','토'][new Date(date+'T12:00:00').getDay()];
+ return appState.timetable[day+'-'+period]||'';
+}
+function validateSchool(d,school){
+ if(!d?.ok||d.schemaVersion!==1||d.source!=='comci-teacher'||d.schoolCode!==school||!Array.isArray(d.teachers)||!d.teachers.length)throw Error(d?.error||'학교와 교사 목록을 확인할 수 없습니다.');
+ const ids=new Set();
+ for(const t of d.teachers){if(!Number.isInteger(t.id)||t.id<1||t.id>500||typeof t.label!=='string'||!t.label.trim()||ids.has(t.id))throw Error('교사 목록의 형식이 올바르지 않습니다.');ids.add(t.id);}
+ return d;
+}
+function validateComciSnapshot(d,config,week){
+ if(!d?.ok||d.schemaVersion!==1||d.source!=='comci-teacher'||String(d.schoolCode)!==config.schoolCode||d.teacherId!==config.teacherId||d.weekStart!==week)throw Error(d?.error||'요청과 다른 학교·교사·날짜의 시간표입니다.');
+ if(config.teacherLabel&&d.teacherLabel!==config.teacherLabel)throw Error('교사 목록이 바뀌었습니다. 학교·선생님을 다시 선택해 주세요.');
+ if(!d.dates||Object.keys(d.dates).length!==5)throw Error('월~금 시간표가 완전하지 않아 적용하지 않았습니다.');
+ const monday=new Date(week+'T12:00:00');
+ for(let day=0;day<5;day++){
+  const date=new Date(monday);date.setDate(monday.getDate()+day);const slots=d.dates[localDate(date)];
+  for(let p=1;p<=7;p++)if(!slots||!Object.hasOwn(slots,p)||!slots[p]||(slots[p].classKey!==null&&!/^[1-3]-[1-9]\d?$/.test(slots[p].classKey)))throw Error('수업 칸이 누락되었거나 학급 형식이 올바르지 않습니다.');
+ }
+ if(typeof d.teacherLabel!=='string'||!d.teacherLabel)throw Error('교사 이름이 누락되었습니다.');
+ return d;
+}
+async function comciFetch(path,params){
+ const u=new URL(path,COMCI_BASE);for(const [k,v]of Object.entries(params))u.searchParams.set(k,v);
+ const r=await fetch(u,{cache:'no-store',signal:AbortSignal.timeout(25000),credentials:'omit'});
+ let data;try{data=await r.json();}catch{throw Error('시간표 서버 응답을 읽지 못했습니다.');}
+ if(!r.ok)throw Error(data.error||'시간표 서버 연결 오류');return data;
+}
+async function requestComci(config,week){
+ return validateComciSnapshot(await comciFetch('/api/timetable',{school:config.schoolCode,teacher:config.teacherId,week}),config,week);
+}
+function identityMessage(text,error=false){
+ const el=document.getElementById('identityStatus');if(el){el.textContent=text;el.classList.toggle('text-rose-700',error);}
+}
+function openIdentitySetup(){
+ ++identityRequest;identitySchool=null;++comciRevision;
+ const field=document.getElementById('identitySchoolCode');field.value=appState.currentIdentity?.schoolCode||'';
+ const select=document.getElementById('identityTeacher');select.replaceChildren(new Option('학교를 먼저 확인해 주세요',''));select.disabled=true;
+ document.getElementById('identityContinue').disabled=true;
+ document.getElementById('identitySchoolSummary').textContent='';
+ document.getElementById('identityCancel').classList.toggle('hidden',needsIdentitySetup());
+ let memoCount=0;for(const data of Object.values(appState.progress||{}))for(const s of Object.values(data.sessions||{}))if(s.memoDist||s.memoSolve||s.memoCheck)memoCount++;
+ document.getElementById('identityPreservation').textContent=needsIdentitySetup()&&appState.isConfigured?'기존 진도와 메모 '+memoCount+'건은 보존됩니다. 처음 선택한 선생님에게 이 기기의 기존 기록을 연결합니다.':'선생님을 바꾸어도 이 기기에 저장된 이전 선생님의 기록은 보관됩니다.';
+ identityMessage('학교 코드로 학교를 확인한 뒤, 본인의 이름과 교사 번호를 선택하세요.');
+ ['settingsModal','timetableModal','memoSplitModal'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
+ document.getElementById('offlineName').value=appState.currentIdentity?.mode==='offline'?appState.teacherName:'';
+ document.getElementById('offlineSubject').value=appState.currentIdentity?.mode==='offline'?appState.subjectName:'';
+ document.getElementById('offlineSchool').value=appState.currentIdentity?.mode==='offline'?appState.currentIdentity.schoolName:'';
+ document.getElementById('offlineClasses').value=(appState.classes||[]).join(', ');
+ chooseSetupMode(appState.currentIdentity?.mode==='offline'?'offline':'online');
+ showScreen('identitySetup');
+}
+function invalidateIdentitySchool(){
+ ++identityRequest;identitySchool=null;
+ document.getElementById('identityTeacher').replaceChildren(new Option('학교를 다시 확인해 주세요',''));
+ document.getElementById('identityTeacher').disabled=true;document.getElementById('identityContinue').disabled=true;
+ document.getElementById('identitySchoolSummary').textContent='';
+}
+async function lookupIdentitySchool(){
+ const school=document.getElementById('identitySchoolCode').value.trim();
+ invalidateIdentitySchool();const revision=identityRequest;
+ if(!/^\d{4,7}$/.test(school)){identityMessage('학교 코드를 숫자로 입력해 주세요.',true);return;}
+ document.getElementById('identityLookup').disabled=true;identityMessage('학교와 교사 목록을 확인하고 있습니다…');
+ try{
+  const data=validateSchool(await comciFetch('/api/school',{school}),school);
+  if(revision!==identityRequest)return;
+  identitySchool=data;
+  document.getElementById('identitySchoolSummary').textContent=(data.schoolName||'학교명 미제공')+' · 학교 코드 '+school+' · 교사 '+data.teachers.length+'명';
+  const select=document.getElementById('identityTeacher');select.replaceChildren(new Option('선생님을 선택하세요',''));
+  for(const teacher of data.teachers)select.add(new Option(teacher.id+'번 · '+teacher.label,String(teacher.id)));
+  select.disabled=false;identityMessage('이름 일부가 가려져 있으므로, 이름과 교사 번호를 함께 확인해 주세요.');
+ }catch(e){if(revision===identityRequest)identityMessage('학교 조회 실패: '+e.message+' 기존 기록은 그대로 유지됩니다.',true);}
+ finally{document.getElementById('identityLookup').disabled=false;}
+}
+function selectIdentityTeacher(){
+ document.getElementById('identityContinue').disabled=!identitySchool||!identitySchool.teachers.some(t=>t.id===Number(document.getElementById('identityTeacher').value));
+}
+function collectClasses(data){
+ const classes=new Set();for(const slots of Object.values(data.dates))for(let p=1;p<=7;p++)if(slots[p].classKey)classes.add(slots[p].classKey);
+ return [...classes].sort((a,b)=>Number(a.split('-')[0])-Number(b.split('-')[0])||Number(a.split('-')[1])-Number(b.split('-')[1]));
+}
+function freshProfile(data){
+ const subjects={};for(const slots of Object.values(data.dates))for(let p=1;p<=7;p++)if(slots[p].subject)subjects[slots[p].subject]=(subjects[slots[p].subject]||0)+1;
+ return {teacherName:data.teacherLabel,subjectName:Object.keys(subjects).sort((a,b)=>subjects[b]-subjects[a])[0]||'수업진도',semester:'',weeklyCount:3,grades:[],classes:[],sessionTopics:{},timetable:{},progress:{},stepCount:3,stepLabels:{dist:'배포',solve:'풀이',check:'검사'}};
+}
+function buildIdentityState(current,school,teacher,data){
+ const next=cloneData(current),key=identityKey(school.schoolCode,teacher.id,teacher.label);
+ const profiles=cloneData(current.teacherProfiles||{});
+ if(current.currentIdentity?.key)profiles[current.currentIdentity.key]=packProfile(current);
+ const isLegacy=!current.currentIdentity&&current.isConfigured;
+ const profile=profiles[key]||(isLegacy?packProfile(current):freshProfile(data));
+ for(const field of PROFILE_FIELDS)delete next[field];
+ Object.assign(next,cloneData(profile));
+ next.teacherName=teacher.label;
+ next.classes=[...new Set([...(next.classes||[]),...collectClasses(data)])];
+ next.progress=next.progress||{};next.sessionTopics=next.sessionTopics||{};next.timetable=next.timetable||{};
+ for(const cls of next.classes)if(!next.progress[cls])next.progress[cls]={currentSession:1,currentStep:'none',sessions:{1:{step:'none',date:'',memoDist:'',memoSolve:'',memoCheck:''}}};
+ // Import starting times only for a genuinely new profile. Never replace existing time settings.
+ if(!isLegacy&&!profiles[key]){
+  next.periodStarts=data.starts.slice(0,7);
+  if(next.periodStarts.every(t=>/^([01]\d|2[0-3]):[0-5]\d$/.test(t||'')))next.alarmTimes=next.periodStarts.map((t,i)=>{
+   const minutes=t=>Number(t.slice(0,2))*60+Number(t.slice(3));
+   const end=i===6||minutes(next.periodStarts[i+1])-minutes(t)>90?minutes(t)+50:minutes(next.periodStarts[i+1])-10;
+   return String(Math.floor(end/60)).padStart(2,'0')+':'+String(end%60).padStart(2,'0');
+  });
+ }
+ const previous=profile.comci;
+ next.comci={enabled:true,schoolCode:school.schoolCode,teacherId:teacher.id,teacherLabel:teacher.label,weeks:{...(previous?.weeks||{}),[data.weekStart]:cloneData(data)},lastSuccessAt:data.fetchedAt};
+ next.currentIdentity={key,schoolCode:school.schoolCode,schoolName:school.schoolName,teacherId:teacher.id,teacherLabel:teacher.label};
+ next.teacherProfiles=profiles;next.identitySetupVersion=IDENTITY_VERSION;next.isConfigured=true;next.expandedRowKey=null;
+ next.teacherProfiles[key]=packProfile(next);return next;
+}
+async function confirmIdentitySelection(){
+ if(identitySubmitting||!identitySchool)return;
+ const teacher=identitySchool.teachers.find(t=>t.id===Number(document.getElementById('identityTeacher').value));
+ if(!teacher)return;
+ const revision=identityRequest,school=identitySchool;
+ identitySubmitting=true;document.getElementById('identityContinue').disabled=true;
+ for(const id of ['identitySchoolCode','identityLookup','identityTeacher'])document.getElementById(id).disabled=true;
+ identityMessage('선생님의 이번 주 시간표를 불러오고 있습니다…');
+ try{
+  const config={schoolCode:school.schoolCode,teacherId:teacher.id,teacherLabel:teacher.label};
+  const today=localDate(new Date()),week=comciWeek(today),data=await requestComci(config,week);
+  if(revision!==identityRequest)return;
+  const next=buildIdentityState(appState,school,teacher,data);
+  const previous=localStorage.getItem(STORAGE_KEY);
+  const backupKey=STORAGE_KEY+'_before_identity_v1';
+  // A storage failure must leave the original app state and setup gate intact.
+  if(previous&&!localStorage.getItem(backupKey))localStorage.setItem(backupKey,previous);
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(next));
+  appState=next;++comciRevision;comciMessage='시간표 자동 배치 완료';comciLastAttempt=0;
+  weekOffset=0;selectedDay=Math.min(4,Math.max(0,new Date().getDay()-1));expandedLesson=null;
+  updateHeader();renderMainClassList();showScreen('main');
+  window.queueNativeClassAlarms?.();renderComciStatus();
+ }catch(e){identityMessage('시작하지 못했습니다: '+e.message+' 기존 진도와 메모는 유지됩니다.',true);}
+ finally{identitySubmitting=false;document.getElementById('identitySchoolCode').disabled=false;document.getElementById('identityLookup').disabled=false;document.getElementById('identityTeacher').disabled=!identitySchool;selectIdentityTeacher();}
+}
+function cancelIdentitySelection(){if(!needsIdentitySetup()){++identityRequest;updateHeader();navigateTo('main');}}
+function renderComciStatus(){
+ const c=comciConfig(),snapshot=c.weeks?.[localDate(weekDates()[0])];
+ let text=appState.currentIdentity?.mode==='offline'?'오프라인 모드 · 직접 설정한 시간표':comciBusy?'시간표 업데이트 확인 중…':comciMessage||(c.enabled?(snapshot?'컴시간 시간표 연결됨':'이 주의 공개 시간표를 아직 받지 못했습니다.'):'자동 업데이트가 꺼져 있습니다.');
+ if(snapshot)text+=' · 마지막 수신 '+new Date(snapshot.fetchedAt).toLocaleString('ko-KR');
+ for(const id of ['comciStatus','comciMainStatus']){const el=document.getElementById(id);if(el)el.textContent=text;}
+ const who=document.getElementById('identityCurrent');
+ if(who)who.textContent=appState.currentIdentity?(appState.currentIdentity.mode==='offline'?appState.currentIdentity.schoolName+' · '+appState.teacherName+' · 오프라인':appState.currentIdentity.schoolCode+' · '+appState.currentIdentity.teacherLabel+' ('+appState.currentIdentity.teacherId+'번)'):'학교·선생님 선택 필요';
+}
+function renderComciSettings(){const box=document.getElementById('comciAuto');if(box)box.checked=comciConfig().enabled===true;renderComciStatus();}
+function toggleComciAuto(){
+ if(needsIdentitySetup()||appState.currentIdentity?.mode==='offline'){openIdentitySetup();return;}
+ ++comciRevision;appState.comci={...comciConfig(),enabled:document.getElementById('comciAuto').checked};
+ comciMessage=appState.comci.enabled?'자동 업데이트를 켰습니다.':'자동 업데이트를 껐습니다. 마지막 수신 시간표는 보관됩니다.';
+ saveState();renderMainClassList();if(appState.comci.enabled)refreshComci(true);
+}
+function mergeComciSnapshot(config,data,enable=true){
+ const old=comciConfig();
+ if(appState.currentIdentity&&(appState.currentIdentity.schoolCode!==config.schoolCode||appState.currentIdentity.teacherId!==config.teacherId))throw Error('현재 선택과 다른 선생님 시간표입니다.');
+ const weeks={...(old.weeks||{}),[data.weekStart]:cloneData(data)};
+ const keys=Object.keys(weeks).sort();while(keys.length>12)delete weeks[keys.shift()];
+ appState.comci={...old,...config,enabled:enable,weeks,lastSuccessAt:data.fetchedAt};
+ appState.classes=[...new Set([...(appState.classes||[]),...collectClasses(data)])];ensureClassProgressStructure();
+ saveState();renderMainClassList();
+}
+async function refreshComci(manual=false){
+ const c=comciConfig();if(needsIdentitySetup()||!c.enabled||comciBusy||document.hidden)return;
+ const now=Date.now();if(!manual&&now-comciLastAttempt<60000)return;comciLastAttempt=now;
+ const revision=comciRevision,config={schoolCode:c.schoolCode,teacherId:c.teacherId,teacherLabel:appState.currentIdentity.teacherLabel},week=localDate(weekDates()[0]);
+ comciBusy=true;comciMessage='';renderComciStatus();
+ try{
+  const data=await requestComci(config,week);
+  if(revision!==comciRevision||!comciConfig().enabled||appState.currentIdentity.schoolCode!==config.schoolCode||appState.currentIdentity.teacherId!==config.teacherId)return;
+  mergeComciSnapshot(config,data);comciMessage='시간표 업데이트 확인 완료';
+ }catch(e){if(revision===comciRevision)comciMessage='업데이트 실패: '+e.message+' · 마지막 수신 시간표를 유지합니다.';}
+ finally{comciBusy=false;renderComciStatus();}
+}
+document.addEventListener('DOMContentLoaded',()=>{
+ renderComciSettings();
+ if(!needsIdentitySetup())refreshComci();
+ setInterval(()=>refreshComci(),300000);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshComci();});
+});
+
+
+/* Manual mode, backup/restore and reset. No record is sent to Comci. */
+let setupMode='online',pendingRestore=null;
+function chooseSetupMode(mode){
+ setupMode=mode==='offline'?'offline':'online';
+ document.getElementById('identityOnlineFields').classList.toggle('hidden',setupMode!=='online');
+ document.getElementById('identityOfflineFields').classList.toggle('hidden',setupMode!=='offline');
+ document.getElementById('modeOnline').setAttribute('aria-pressed',String(setupMode==='online'));
+ document.getElementById('modeOffline').setAttribute('aria-pressed',String(setupMode==='offline'));
+ identityMessage(setupMode==='offline'?'컴시간 연결 없이 시작합니다. 시간표는 직접 배치하고 진도와 메모는 이 기기에 저장합니다.':'학교 코드로 학교를 확인한 뒤 선생님을 선택하세요.');
+}
+function readManualClasses(text){
+ const classes=[...new Set(String(text).split(/[,，\s]+/).filter(Boolean))];
+ if(!classes.length||classes.some(c=>!/^[1-3]-[1-9]\d?$/.test(c)))throw Error('담당 반을 1-1, 1-2처럼 입력하세요. 학년은 1~3학년입니다.');
+ return classes.sort((a,b)=>Number(a.split('-')[0])-Number(b.split('-')[0])||Number(a.split('-')[1])-Number(b.split('-')[1]));
+}
+function newBlankState(){
+ return {isConfigured:false,teacherName:'',subjectName:'',semester:'',weeklyCount:3,grades:[],classes:[],sessionTopics:{},timetable:{},progress:{},expandedRowKey:null};
+}
+function buildOfflineState(current,values){
+ const name=String(values.name||'').trim(),subject=String(values.subject||'').trim(),school=String(values.school||'').trim();
+ if(!name||name.length>40||!subject||subject.length>60||school.length>100)throw Error('이름과 과목을 입력해 주세요.');
+ const classes=readManualClasses(values.classes);
+ const key='offline:'+encodeURIComponent(school)+':'+encodeURIComponent(name);
+ const next=cloneData(current),profiles=cloneData(current.teacherProfiles||{});
+ if(current.currentIdentity?.key)profiles[current.currentIdentity.key]=packProfile(current);
+ const legacy=!current.currentIdentity&&current.isConfigured;
+ const profile=profiles[key]||(legacy?packProfile(current):{...newBlankState(),stepCount:3,stepLabels:{dist:'배포',solve:'풀이',check:'검사'}});
+ for(const field of PROFILE_FIELDS)delete next[field];
+ Object.assign(next,cloneData(profile));
+ next.teacherName=name;next.subjectName=subject;
+ next.classes=[...new Set([...(next.classes||[]),...classes])];
+ next.progress=next.progress||{};next.sessionTopics=next.sessionTopics||{};next.timetable=next.timetable||{};
+ for(const cls of next.classes)if(!next.progress[cls])next.progress[cls]={currentSession:1,currentStep:'none',sessions:{1:{step:'none',date:'',memoDist:'',memoSolve:'',memoCheck:''}}};
+ next.grades=[...new Set(next.classes.map(c=>Number(c.split('-')[0])))];
+ next.comci={enabled:false,weeks:{}};
+ next.currentIdentity={mode:'offline',key,schoolCode:'',schoolName:school||'직접 설정',teacherId:null,teacherLabel:name};
+ next.teacherProfiles=profiles;next.teacherProfiles[key]=packProfile(next);
+ next.identitySetupVersion=IDENTITY_VERSION;next.isConfigured=true;next.expandedRowKey=null;return next;
+}
+function persistSelectedState(next){
+ const previous=localStorage.getItem(STORAGE_KEY),key=STORAGE_KEY+'_before_identity_v1';
+ if(previous&&!localStorage.getItem(key))localStorage.setItem(key,previous);
+ localStorage.setItem(STORAGE_KEY,JSON.stringify(next));
+ appState=next;++comciRevision;++identityRequest;comciBusy=false;
+ weekOffset=0;selectedDay=Math.min(4,Math.max(0,new Date().getDay()-1));expandedLesson=null;
+ updateHeader();renderMainClassList();showScreen('main');window.queueNativeClassAlarms?.();renderComciStatus();
+}
+function startOfflineIdentity(){
+ try{
+  const next=buildOfflineState(appState,{name:document.getElementById('offlineName').value,subject:document.getElementById('offlineSubject').value,school:document.getElementById('offlineSchool').value,classes:document.getElementById('offlineClasses').value});
+  persistSelectedState(next);comciMessage='오프라인 모드 · 시간표를 직접 설정하세요.';renderComciStatus();
+ }catch(e){identityMessage('시작하지 못했습니다: '+e.message+' 기존 기록은 유지됩니다.',true);}
+}
+function makeBackup(state=appState){
+ return {format:'class-progress-backup',schemaVersion:1,exportedAt:new Date().toISOString(),appState:cloneData(state)};
+}
+async function downloadBackup(){
+ try{
+  if(window.isNativeClassApp?.()){
+   const plugins=window.Capacitor?.Plugins;
+   if(!plugins?.Filesystem||!plugins?.Share)throw Error('앱 백업 기능을 사용할 수 없습니다.');
+   const saved=await plugins.Filesystem.writeFile({path:'class-progress-backup-'+localDate(new Date())+'.json',data:JSON.stringify(makeBackup(),null,2),directory:'CACHE',encoding:'utf8'});
+   await plugins.Share.share({title:'수업진도 전체 백업',url:saved.uri,dialogTitle:'백업 파일 저장 또는 공유'});
+   dataMessage('백업 파일을 저장하거나 공유할 위치를 선택했습니다.');return;
+  }
+  const blob=new Blob([JSON.stringify(makeBackup(),null,2)],{type:'application/json;charset=utf-8'});
+  const href=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=href;a.download='수업진도_전체백업_'+localDate(new Date())+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(href),1000);
+  dataMessage('전체 프로필과 진도·메모를 백업 파일로 저장했습니다.');
+ }catch(e){dataMessage('백업 실패: '+e.message,true);}
+}
+function dataMessage(text,error=false){const el=document.getElementById('dataStatus');if(el){el.textContent=text;el.classList.toggle('text-rose-700',error);}}
+function isPlainRecord(v){return !!v&&typeof v==='object'&&!Array.isArray(v);}
+function rejectUnsafeKeys(v){
+ if(!v||typeof v!=='object')return;
+ for(const k of Object.keys(v)){if(['__proto__','prototype','constructor'].includes(k))throw Error('안전하지 않은 백업 항목이 있습니다.');rejectUnsafeKeys(v[k]);}
+}
+function validateProfile(profile){
+ if(!isPlainRecord(profile)||!Array.isArray(profile.classes)||profile.classes.length>300||profile.classes.some(c=>typeof c!=='string'||!/^[1-3]-[1-9]\d?$/.test(c)))throw Error('담당 반 정보가 올바르지 않습니다.');
+ if(!isPlainRecord(profile.progress)||!isPlainRecord(profile.sessionTopics||{})||!isPlainRecord(profile.timetable||{}))throw Error('진도·주제·시간표 형식이 올바르지 않습니다.');
+ for(const [key,value]of Object.entries(profile.timetable||{}))if(!/^[월화수목금]-[1-7]$/.test(key)||(value!==''&&!/^[1-3]-[1-9]\d?$/.test(value)))throw Error('시간표 배정이 올바르지 않습니다.');
+ for(const [cls,data]of Object.entries(profile.progress)){
+  if(!/^[1-3]-[1-9]\d?$/.test(cls)||!isPlainRecord(data)||!isPlainRecord(data.sessions)||!Number.isInteger(data.currentSession)||data.currentSession<1||data.currentSession>100000||!['none','dist','solve','check'].includes(data.currentStep||'none'))throw Error('진도 정보가 올바르지 않습니다.');
+  for(const [n,s]of Object.entries(data.sessions)){
+   if(!/^[1-9]\d{0,5}$/.test(n)||!isPlainRecord(s)||!['none','dist','solve','check'].includes(s.step||'none'))throw Error('차시 기록이 올바르지 않습니다.');
+   for(const field of ['memoDist','memoSolve','memoCheck','date'])if(s[field]!==undefined&&typeof s[field]!=='string')throw Error('메모·날짜 형식이 올바르지 않습니다.');
+  }
+ }
+ for(const value of Object.values(profile.sessionTopics||{}))if(typeof value!=='string')throw Error('수업 주제가 올바르지 않습니다.');
+ for(const field of ['teacherName','subjectName','semester'])if(profile[field]!==undefined&&typeof profile[field]!=='string')throw Error('기본 정보 형식이 올바르지 않습니다.');
+ if(profile.comci?.weeks){
+  if(!isPlainRecord(profile.comci.weeks))throw Error('수신 시간표 형식이 올바르지 않습니다.');
+  for(const [week,d]of Object.entries(profile.comci.weeks))validateComciSnapshot(d,{schoolCode:String(profile.comci.schoolCode),teacherId:Number(profile.comci.teacherId),teacherLabel:profile.comci.teacherLabel},week);
+ }
+}
+function parseBackup(text){
+ if(typeof text!=='string'||text.length>5000000)throw Error('백업 파일은 5MB 이하여야 합니다.');
+ let data;try{data=JSON.parse(text);}catch{throw Error('JSON 백업 파일을 읽을 수 없습니다.');}
+ rejectUnsafeKeys(data);
+ const envelope=data?.format==='class-progress-backup';
+ if(envelope&&data.schemaVersion!==1)throw Error('이 버전의 백업은 지원하지 않습니다.');
+ const state=envelope?data.appState:data;validateProfile(state);
+ if(state.teacherProfiles!==undefined){
+  if(!isPlainRecord(state.teacherProfiles)||Object.keys(state.teacherProfiles).length>300)throw Error('프로필 형식이 올바르지 않습니다.');
+  for(const profile of Object.values(state.teacherProfiles))validateProfile(profile);
+ }
+ if(state.currentIdentity){
+  const who=state.currentIdentity;
+  if(!isPlainRecord(who)||typeof who.key!=='string'||!who.key||typeof who.teacherLabel!=='string'||!who.teacherLabel)throw Error('선택한 선생님 정보가 올바르지 않습니다.');
+  if(who.mode!=='offline'&&(!/^\d{4,7}$/.test(who.schoolCode||'')||!Number.isInteger(who.teacherId)||who.teacherId<1||who.teacherId>500))throw Error('학교·선생님 정보가 올바르지 않습니다.');
+ }
+ const clean=cloneData(state);clean.expandedRowKey=null;return clean;
+}
+function countBackup(state){
+ let sessions=0,memos=0;
+ for(const data of Object.values(state.progress))for(const s of Object.values(data.sessions)){sessions++;if(s.memoDist||s.memoSolve||s.memoCheck)memos++;}
+ return {profiles:Object.keys(state.teacherProfiles||{}).length||1,classes:state.classes.length,sessions,memos};
+}
+function requestBackupRestore(){document.getElementById('restoreFile').value='';document.getElementById('restoreFile').click();}
+async function previewBackupFile(file){
+ if(!file)return;
+ try{
+  if(file.size>5000000)throw Error('백업 파일은 5MB 이하여야 합니다.');
+  pendingRestore=parseBackup(await file.text());const c=countBackup(pendingRestore);
+  document.getElementById('restoreSummary').textContent='프로필 '+c.profiles+'개 · 현재 선택의 '+c.classes+'개 반 · '+c.sessions+'개 차시 · 메모 '+c.memos+'건. 복구하면 이 기기의 현재 기록을 백업 내용으로 교체합니다. 교체 전 기록은 기기 안에 따로 보관합니다.';
+  document.getElementById('restoreStatus').textContent='';document.getElementById('restoreConfirm').classList.remove('hidden');
+ }catch(e){pendingRestore=null;dataMessage('복구 파일 확인 실패: '+e.message,true);identityMessage('복구 파일 확인 실패: '+e.message,true);}
+}
+function applyBackupRestore(){
+ if(!pendingRestore)return;
+ try{
+  const previous=localStorage.getItem(STORAGE_KEY);
+  if(previous)localStorage.setItem(STORAGE_KEY+'_before_restore',previous);
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(pendingRestore));
+  appState=cloneData(pendingRestore);pendingRestore=null;++identityRequest;++comciRevision;comciBusy=false;comciMessage='백업 복구 완료';
+  document.getElementById('restoreConfirm').classList.add('hidden');
+  ['settingsModal','timetableModal','memoSplitModal'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
+  if(needsIdentitySetup())openIdentitySetup();else{updateHeader();weekOffset=0;renderMainClassList();showScreen('main');}
+  window.queueNativeClassAlarms?.();
+ }catch(e){document.getElementById('restoreStatus').textContent='복구하지 못했습니다: '+e.message+' 기존 상태는 유지됩니다.';}
+}
+function cancelBackupRestore(){pendingRestore=null;document.getElementById('restoreConfirm').classList.add('hidden');}
+function requestFullReset(){
+ document.getElementById('resetTyped').value='';document.getElementById('resetStatus').textContent='';
+ document.getElementById('resetConfirm').classList.remove('hidden');
+}
+function performFullReset(){
+ if(document.getElementById('resetTyped').value.trim()!=='초기화'){document.getElementById('resetStatus').textContent='확인란에 초기화를 입력해 주세요.';return;}
+ try{
+  const blank=newBlankState();localStorage.setItem(STORAGE_KEY,JSON.stringify(blank));
+  appState=blank;for(const suffix of ['_before_restore','_before_identity_v1'])localStorage.removeItem(STORAGE_KEY+suffix);
+  ++identityRequest;++comciRevision;comciBusy=false;comciMessage='';
+  ['resetConfirm','settingsModal','timetableModal','memoSplitModal','restoreConfirm'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
+  pendingRestore=null;openIdentitySetup();window.queueNativeClassAlarms?.();
+ }catch(e){document.getElementById('resetStatus').textContent='초기화하지 못했습니다: '+e.message;}
+}
+function cancelFullReset(){document.getElementById('resetConfirm').classList.add('hidden');}
+function offlineFallback(){
+ window.lucide=window.lucide||{createIcons(){}};
+ if(!navigator.onLine)document.documentElement.classList.add('network-offline');
+}
+offlineFallback();
+document.addEventListener('DOMContentLoaded',async()=>{
+ if(window.isNativeClassApp?.()){document.getElementById('offlineAvailability').textContent='설치된 앱은 컴시간 연결 없이도 직접 입력 모드로 사용할 수 있습니다.';return;}
+ if('serviceWorker'in navigator&&location.protocol==='https:'){
+  try{await navigator.serviceWorker.register('./firebase-messaging-sw.js');await navigator.serviceWorker.ready;document.getElementById('offlineAvailability').textContent='앱 화면 저장을 준비했습니다. 첫 저장이 완료된 뒤 인터넷 없이 다시 열 수 있습니다.';}
+  catch{document.getElementById('offlineAvailability').textContent='앱 화면 저장에 실패했습니다. 현재 열린 화면에서 직접 입력 기능은 사용할 수 있습니다.';}
+ }
+});
+
+</script>
 <script>
 (function(){
   const key='class-progress-web-theme';
@@ -1374,5 +1702,8 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-</body>
+<input type="file" id="restoreFile" accept="application/json,.json" hidden onchange="previewBackupFile(this.files[0])">
+<div id="restoreConfirm" class="data-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="restoreTitle"><div><h2 id="restoreTitle">백업을 복구할까요?</h2><p id="restoreSummary"></p><p id="restoreStatus" role="status"></p><button type="button" onclick="cancelBackupRestore()">취소</button><button class="confirm" type="button" onclick="applyBackupRestore()">백업 복구</button></div></div>
+<div id="resetConfirm" class="data-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="resetTitle"><div><h2 id="resetTitle">전체 초기화</h2><p>이 기기에 저장된 모든 선생님의 진도·메모·설정을 삭제하고 처음 설정으로 돌아갑니다. 필요한 기록은 먼저 백업해 주세요.</p><label for="resetTyped">확인을 위해 ‘초기화’를 입력하세요.</label><input id="resetTyped" autocomplete="off"><p id="resetStatus" role="status"></p><button type="button" onclick="cancelFullReset()">취소</button><button class="danger" type="button" onclick="performFullReset()">전체 초기화</button></div></div></body>
 </html>
+
