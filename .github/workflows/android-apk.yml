@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -45,3 +45,13 @@ jobs:
           name: class-progress-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
+      - name: Publish downloadable APK release
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="apk-build-${{ github.run_number }}"
+          gh release create "$TAG" android/app/build/outputs/apk/debug/app-debug.apk#class-progress-debug.apk \
+            --title "수업진도 APK 빌드 ${{ github.run_number }}" \
+            --notes "테스트용 Android APK입니다. 기존 설치본을 유지한 채 업데이트할 수 있습니다. 백그라운드 수업 알림은 아직 구현되지 않았습니다." \
+            --latest
