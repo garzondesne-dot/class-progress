@@ -737,6 +737,12 @@ html.web-dark input,html.apk-dark input,html.web-dark textarea,html.apk-dark tex
       const clsData = appState.progress[cls];
       const curSessionNo = clsData.currentSession;
       
+      if (clsData.currentStep === 'none' && targetStep !== 'none' && !String(appState.sessionTopics?.[curSessionNo] || '').trim()) {
+        const topic = window.prompt('수업주제를 입력해주세요. (' + curSessionNo + '차시)');
+        if (topic === null || !topic.trim()) return;
+        appState.sessionTopics[curSessionNo] = topic.trim();
+        saveState();
+      }
       clsData.currentStep = targetStep;
       if (!clsData.sessions[curSessionNo]) {
         clsData.sessions[curSessionNo] = { step: 'none', date: '', memoDist: '', memoSolve: '', memoCheck: '' };
