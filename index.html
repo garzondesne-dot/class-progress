@@ -92,7 +92,7 @@
     .compact-lesson[aria-expanded="true"] .compact-chevron{transform:translateY(-50%) rotate(180deg)}
     .compact-detail .flex{flex-wrap:wrap}.compact-detail .flex button{min-height:44px}
 .alarm-time-row{display:grid;grid-template-columns:48px minmax(0,1fr) 12px minmax(0,1fr);gap:6px;align-items:center;width:100%;font-size:14px}.alarm-time-row input[type=time]{width:100%;min-width:0;max-width:100%;font-size:15px;padding:10px 4px;border:1px solid #cbd5e1;border-radius:9px;background:white;color:#0f172a;box-sizing:border-box}.alarm-time-row b{white-space:nowrap}
-.compact-expand-btn{display:flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;grid-column:3;justify-self:end;align-self:center;position:relative;z-index:2;border-radius:10px;background:#eef2ff;color:#4338ca;margin-right:5px}.compact-lesson{padding-right:52px!important;grid-column:3;grid-row:auto}.compact-expand-btn{margin-top:-50px;margin-bottom:6px}
+.compact-lesson-wrap{position:relative;min-width:0;display:flex;align-items:stretch}.compact-lesson-wrap .compact-lesson{width:100%;padding-right:50px!important}.compact-expand-btn{position:absolute;right:5px;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:10px;background:#eef2ff;color:#4338ca;z-index:2}
 </style>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex justify-center selection:bg-indigo-100">
@@ -741,7 +741,7 @@
           if(!data){html+=`<div class="compact-side-slot">${escapeHtml(cls)}</div>`;return;}
           const no=data.currentSession||1,step=data.currentStep||'none',labels=getStepLabels();
           if(!active){html+=`<button onclick="selectDay(${i})" class="compact-side-slot step-${step}" aria-label="${day} ${period}교시 ${escapeHtml(cls)}">${escapeHtml(cls)}<span class="side-dot"></span></button>`;return;}
-          html+=`<button onclick="advanceLesson('${cls}',${period})" aria-label="${escapeHtml(cls)} ${no}차시 진도 나가기" class="compact-lesson step-${step}"><span class="compact-session">${escapeHtml(cls)} · ${no}차시</span><strong class="compact-topic">${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}</strong><span class="compact-status">${step==='none'?'대기':escapeHtml(labels[step]||step)}</span></button><button type="button" onclick="toggleLesson('${key}')" aria-expanded="${expandedLesson===key}" aria-label="${period}교시 상세 ${expandedLesson===key?'접기':'펼치기'}" class="compact-expand-btn"><i data-lucide="${expandedLesson===key?'chevron-up':'chevron-down'}" class="w-5 h-5"></i></button>`;
+          html+=`<div class="compact-lesson-wrap"><button onclick="advanceLesson('${cls}',${period})" aria-label="${escapeHtml(cls)} ${no}차시 진도 나가기" class="compact-lesson step-${step}"><span class="compact-session">${escapeHtml(cls)} · ${no}차시</span><strong class="compact-topic">${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}</strong><span class="compact-status">${step==='none'?'대기':escapeHtml(labels[step]||step)}</span></button><button type="button" onclick="toggleLesson('${key}')" aria-expanded="${expandedLesson===key}" aria-label="${period}교시 상세 ${expandedLesson===key?'접기':'펼치기'}" class="compact-expand-btn"><i data-lucide="${expandedLesson===key?'chevron-up':'chevron-down'}" class="w-5 h-5"></i></button></div>`;
         });
         if(expandedLesson===selectedDay+'-'+period){
           const cls=appState.timetable[DAYS[selectedDay]+'-'+period],data=appState.progress[cls];
