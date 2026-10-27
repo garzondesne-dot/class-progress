@@ -38,18 +38,10 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
-      - name: Enable Android notification and exact alarm permissions
+      - name: Enable Android notification permissions
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path("android/app/src/main/AndroidManifest.xml")
-          s=p.read_text()
-          permissions='''    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-'''
-          s=s.replace("<application",permissions+"    <application",1)
-          p.write_text(s)
-          PY
+          sed -i '/<application/i\    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' android/app/src/main/AndroidManifest.xml
+          sed -i '/<application/i\    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />' android/app/src/main/AndroidManifest.xml
       - name: Build debug APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
@@ -65,5 +57,5 @@ jobs:
           TAG="apk-build-${{ github.run_number }}"
           gh release create "$TAG" android/app/build/outputs/apk/debug/app-debug.apk#class-progress-debug.apk \
             --title "수업진도 APK 빌드 ${{ github.run_number }}" \
-            --notes "테스트용 Android APK입니다. 기존 설치본을 유지한 채 업데이트할 수 있습니다. 백그라운드 수업 알림은 아직 구현되지 않았습니다." \
+            --notes "테스트용 Android APK입니다. 기존 설치본을 유지한 채 업데이트할 수 있습니다. Android 로컬 수업 알림 예약 기능을 포함합니다. 알림 및 정확한 알람 권한을 허용하세요." \
             --latest
