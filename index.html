@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>선생님 수업진도 체크리스트 & 시간표 알리미</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- SheetJS (Excel 다운로드) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap');
+    
+    * {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    input, textarea, select {
+      user-select: auto;
+    }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    @keyframes pulse-subtle {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+    .active-card-pulse {
+      animation: pulse-subtle 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex justify-center selection:bg-indigo-100">
+
+  <!-- ================= 모바일 프레임 컨테이너 ================= -->
+  <div class="w-full max-w-md bg-white min-h-screen shadow-2xl flex flex-col relative pb-10">
+
+    <!-- ================= 상단 헤더 (항상 고정) ================= -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 px-3.5 py-2.5 flex items-center justify-between shadow-xs">
+      <!-- 과목 및 교사 정보 -->
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-xs">
+          <i data-lucide="check-check" class="w-4 h-4"></i>
+        </div>
+        <div class="leading-tight">
+          <div class="flex items-center gap-1.5">
+            <span id="headerSubject" class="font-black text-slate-900 text-sm">과목명</span>
+            <span id="headerSemester" class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-brand-700 border border-indigo-100">1학기</span>
+          </div>
+          <p id="headerTeacher" class="text-[11px] text-slate-400 font-medium">선생님</p>
+        </div>
+      </div>
+
+      <!-- 상단 액션 버튼 그룹: [⏰ 시간표] + [⚙️ 설정] -->
+      <div class="flex items-center gap-1.5">
+        <button onclick="openTimetableModal()" class="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 active:scale-95 text-xs font-black flex items-center gap-1 shadow-xs transition">
+          <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-600"></i>
+          <span>⏰ 시간표</span>
+        </button>
+        <button onclick="openSettingsModal()" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 active:scale-95 transition" aria-label="설정">
+          <i data-lucide="settings" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- ================= 화면 1: 온보딩 초기 설정 (최초 1회) ================= -->
+    <div id="screen-onboarding" class="flex-1 flex flex-col p-5 overflow-y-auto hidden">
+      <div class="my-auto py-2">
+        <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-brand-600 flex items-center justify-center mx-auto mb-3 shadow-sm border border-brand-100">
+          <i data-lucide="sparkles" class="w-7 h-7"></i>
+        </div>
+        <h2 class="text-2xl font-black text-center text-slate-900">수업진도 시작 설정</h2>
+        <p class="text-xs text-center text-slate-500 mt-1 mb-5">선생님의 수업 환경에 맞게 기본 정보를 입력해 주세요.<br>(언제든 설정에서 수정 가능합니다)</p>
+
+        <form id="onboardingForm" onsubmit="handleOnboardingSubmit(event)" class="space-y-4 text-xs font-semibold text-slate-700">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block mb-1 text-slate-600">선생님 성함</label>
+              <input type="text" id="obTeacherName" required placeholder="김선생" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block mb-1 text-slate-600">담당 과목</label>
+              <input type="text" id="obSubjectName" required placeholder="공통수학 / 국어" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block mb-1 text-slate-600">학기 선택</label>
+              <select id="obSemester" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white">
+                <option value="1학기">1학기</option>
+                <option value="2학기">2학기</option>
+                <option value="여름방학">여름방학</option>
+                <option value="겨울방학">겨울방학</option>
+              </select>
+            </div>
+            <div>
+              <label class="block mb-1 text-slate-600">주당 차시 수</label>
+              <select id="obWeeklyCount" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white">
+                <option value="1">주 1회</option>
+                <option value="2">주 2회</option>
+                <option value="3" selected>주 3회</option>
+                <option value="4">주 4회</option>
+                <option value="5">주 5회</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 학년 선택 칩 -->
+          <div>
+            <label class="block mb-1 text-slate-600">학년 선택 (복수 선택 가능)</label>
+            <div class="flex gap-2" id="obGradeChips">
+              <button type="button" onclick="toggleChip(this)" data-val="1" class="chip active flex-1 py-2 rounded-xl border text-center font-bold transition bg-brand-600 text-white border-brand-600">1학년</button>
+              <button type="button" onclick="toggleChip(this)" data-val="2" class="chip flex-1 py-2 rounded-xl border text-center font-bold transition bg-white text-slate-700 border-slate-200">2학년</button>
+              <button type="button" onclick="toggleChip(this)" data-val="3" class="chip flex-1 py-2 rounded-xl border text-center font-bold transition bg-white text-slate-700 border-slate-200">3학년</button>
+            </div>
+          </div>
+
+          <!-- 담당 반 선택 칩 -->
+          <div>
+            <label class="block mb-1 text-slate-600">담당 반 선택 (누르면 활성화/비활성화)</label>
+            <div class="grid grid-cols-4 gap-2" id="obClassChips">
+              <button type="button" onclick="toggleChip(this)" data-val="1" class="chip active py-2 rounded-xl border text-center font-bold transition bg-brand-600 text-white border-brand-600">1반</button>
+              <button type="button" onclick="toggleChip(this)" data-val="2" class="chip active py-2 rounded-xl border text-center font-bold transition bg-brand-600 text-white border-brand-600">2반</button>
+              <button type="button" onclick="toggleChip(this)" data-val="3" class="chip active py-2 rounded-xl border text-center font-bold transition bg-brand-600 text-white border-brand-600">3반</button>
+              <button type="button" onclick="toggleChip(this)" data-val="4" class="chip active py-2 rounded-xl border text-center font-bold transition bg-brand-600 text-white border-brand-600">4반</button>
+              <button type="button" onclick="toggleChip(this)" data-val="5" class="chip active py-2 rounded-xl border text-center font-bold transition bg-brand-600 text-white border-brand-600">5반</button>
+              <button type="button" onclick="toggleChip(this)" data-val="6" class="chip py-2 rounded-xl border text-center font-bold transition bg-white text-slate-700 border-slate-200">6반</button>
+              <button type="button" onclick="toggleChip(this)" data-val="7" class="chip py-2 rounded-xl border text-center font-bold transition bg-white text-slate-700 border-slate-200">7반</button>
+              <button type="button" onclick="toggleChip(this)" data-val="8" class="chip py-2 rounded-xl border text-center font-bold transition bg-white text-slate-700 border-slate-200">8반</button>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full mt-4 py-3.5 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-black text-base rounded-2xl shadow-lg shadow-brand-500/30 transition flex items-center justify-center gap-2">
+            <span>체크리스트 시작하기</span>
+            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ================= 화면 2: 메인 화면 ([진도확인하기] + [진도입력하기]) ================= -->
+    <div id="screen-main" class="flex-1 flex flex-col p-4 gap-4 overflow-y-auto">
+      
+      <!-- 상단 가장 큰 버튼: [진도확인하기] -->
+      <button onclick="navigateTo('matrixDashboard')" class="w-full p-4.5 bg-gradient-to-br from-indigo-700 via-brand-600 to-indigo-900 active:scale-[0.98] text-white rounded-3xl shadow-xl shadow-indigo-600/25 transition relative overflow-hidden group text-left">
+        <div class="relative z-10">
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur text-white text-[11px] font-black mb-1.5">
+            <i data-lucide="table-2" class="w-3.5 h-3.5"></i>
+            <span>종합 진도표 & 메모 일지</span>
+          </div>
+          <h2 class="text-2xl font-black tracking-tight flex items-center justify-between">
+            <span>진도 확인하기</span>
+            <i data-lucide="chevron-right" class="w-7 h-7 text-white/80 group-hover:translate-x-1 transition-transform"></i>
+          </h2>
+          <p class="text-[11px] text-indigo-100 font-medium mt-1 opacity-90">차시별 주제 확인, 표 확장 메모 열람 및 엑셀 다운로드</p>
+        </div>
+        <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+      </button>
+
+      <!-- [진도입력하기] 섹션 -->
+      <div class="flex-1 flex flex-col">
+        <div class="flex items-center justify-between mb-2 px-1">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-4.5 rounded-full bg-brand-600"></span>
+            <h3 class="text-base font-black text-slate-900">진도 입력하기</h3>
+          </div>
+          <span class="text-[11px] text-slate-400 font-bold">반 버튼 터치 즉시 [배포] 진행</span>
+        </div>
+
+        <!-- 각 반 카드 목록 (원터치 전환 및 하단 [풀이][메모][취소] 액션 버튼 포함) -->
+        <div id="mainClassList" class="flex flex-col gap-2.5">
+          <!-- 동적으로 renderMainClassList()에서 렌더링 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 화면 3: 진도확인하기 (종합표 + 차시별 주제 + 아코디언 확장 메모) ================= -->
+    <div id="screen-matrixDashboard" class="flex-1 flex flex-col hidden overflow-y-auto">
+      <!-- 서브 헤더 -->
+      <div class="sticky top-0 z-20 bg-white/95 backdrop-blur px-3.5 py-2.5 border-b border-slate-200 flex items-center justify-between shadow-xs">
+        <button onclick="navigateTo('main')" class="inline-flex items-center gap-1 py-1 px-2.5 rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 active:scale-95 text-xs font-bold transition">
+          <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          <span>메인으로</span>
+        </button>
+        <span class="text-sm font-black text-slate-900">종합 진도표 (확장 뷰)</span>
+        <button onclick="exportExcelFile()" class="p-1.5 px-2.5 rounded-xl bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 text-xs font-black flex items-center gap-1 transition" title="엑셀 파일 다운로드">
+          <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+          <span>엑셀 저장</span>
+        </button>
+      </div>
+
+      <!-- 안내 배너 -->
+      <div class="px-4 py-2 bg-indigo-50/70 border-b border-indigo-100 text-[11px] text-brand-900 flex items-center justify-between font-semibold">
+        <span>💡 표에서 셀을 누르면 <strong>수업 일시 & 3단 메모</strong>가 확장됩니다.</span>
+      </div>
+
+      <!-- 차시별 수업 주제 입력 및 강조 영역 -->
+      <div class="p-3.5 border-b border-slate-200 bg-slate-50 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-black text-slate-800 flex items-center gap-1">
+            <i data-lucide="book-open" class="w-3.5 h-3.5 text-brand-600"></i>
+            <span>차시별 수업 주제 / 학습지명 입력</span>
+          </span>
+          <span class="text-[10px] text-slate-400">입력 즉시 자동 저장</span>
+        </div>
+        <div id="topicInputContainer" class="flex gap-2 overflow-x-auto no-scrollbar py-1">
+          <!-- JS로 차시별 주제 칩/입력창 동적 생성 -->
+        </div>
+      </div>
+
+      <!-- 종합 진도표 (Matrix) -->
+      <div class="p-3">
+        <table class="w-full border-collapse text-xs bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden" id="matrixTable">
+          <thead class="bg-slate-100 font-extrabold text-slate-700 text-center">
+            <tr id="matrixTheadRow">
+              <th class="p-2 border border-slate-200 min-w-[58px]">차시 / 주제</th>
+              <!-- 각 반 헤더 열 동적 생성 -->
+            </tr>
+          </thead>
+          <tbody id="matrixTbody" class="text-center divide-y divide-slate-200">
+            <!-- 동적 렌더링 + 클릭 시 아코디언 행 삽입 -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ================= 모달 1: 시간표 설정 모달 (월~금, 1~7교시) ================= -->
+    <div id="timetableModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-xs hidden p-0 sm:p-3">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl max-h-[92vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden animate-in slide-in-from-bottom duration-200">
+        
+        <div class="px-4 py-3.5 border-b border-slate-200 flex items-center justify-between bg-amber-50/50">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xs">
+              <i data-lucide="clock" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-black text-slate-900">주간 수업 시간표 & 알림 설정</h3>
+              <p class="text-[10px] text-slate-500 font-medium">수업 종료 시간에 맞춰 진도 입력 알림이 작동합니다</p>
+            </div>
+          </div>
+          <button onclick="closeTimetableModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div class="p-4 overflow-y-auto space-y-4 text-xs">
+          <!-- 알림 작동 타이밍 및 권한 -->
+          <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-black text-slate-800">🔔 수업 진도 알리미 동작</span>
+              <button onclick="testBrowserNotification()" class="px-2 py-1 rounded-lg bg-indigo-600 text-white font-bold text-[10px] active:scale-95 shadow-xs">
+                테스트 알림 울리기
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-500 leading-snug">수업 종료 시각(예: 09:50)에 스마트폰 상단에 <strong>"[1-1] 수업 진도를 체크하세요!"</strong> 알림이 울리며, 누르면 해당 반으로 즉시 이동합니다.</p>
+          </div>
+
+          <!-- 시간표 요일 탭 & 배정 표 -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-black text-slate-900">교시별 담당 학급 배정</span>
+              <span class="text-[10px] text-slate-400">교시 셀을 눌러 반 배정</span>
+            </div>
+
+            <!-- 요일별 시간표 테이블 -->
+            <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl">
+              <table class="w-full text-center text-xs">
+                <thead class="bg-slate-100 font-bold text-slate-700">
+                  <tr>
+                    <th class="p-1.5 border-b border-r border-slate-200 w-12">교시</th>
+                    <th class="p-1.5 border-b border-r border-slate-200">월</th>
+                    <th class="p-1.5 border-b border-r border-slate-200">화</th>
+                    <th class="p-1.5 border-b border-r border-slate-200">수</th>
+                    <th class="p-1.5 border-b border-r border-slate-200">목</th>
+                    <th class="p-1.5 border-b border-slate-200">금</th>
+                  </tr>
+                </thead>
+                <tbody id="timetableTbody" class="divide-y divide-slate-200">
+                  <!-- 동적 7교시 렌더링 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+          <button onclick="closeTimetableModal()" class="w-full py-2.5 rounded-xl bg-slate-900 text-white text-xs font-black shadow-xs active:scale-98">
+            시간표 설정 완료
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 모달 2: [배포 / 풀이 / 검사] 3단 분할 메모 모달 ================= -->
+    <div id="memoSplitModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-xs hidden p-0 sm:p-3">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl max-h-[90vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden animate-in slide-in-from-bottom duration-200">
+        
+        <div class="px-4 py-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+          <div>
+            <h3 id="memoModalTitle" class="text-sm font-black text-slate-900">1-1 (1차시) 수업 메모</h3>
+            <p class="text-[10px] text-slate-400 font-medium">단계별로 나누어 꼼꼼히 기록하고 언제든 확인하세요</p>
+          </div>
+          <button onclick="closeMemoModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div class="p-4 overflow-y-auto space-y-3.5 text-xs font-semibold">
+          <!-- 1. 배포 메모 -->
+          <div class="p-3 rounded-2xl bg-cyan-50/60 border border-cyan-200 space-y-1.5">
+            <div class="flex items-center justify-between text-cyan-900">
+              <span class="flex items-center gap-1 font-black">
+                <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+                <span>[배포 메모]</span>
+              </span>
+              <span class="text-[10px] text-cyan-700 font-normal">학습지 출력 및 배부 특이사항</span>
+            </div>
+            <textarea id="modalMemoDist" rows="2" placeholder="예: 3모둠 학습지 2장 부족해서 추가 배부함..." class="w-full p-2 bg-white border border-cyan-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500"></textarea>
+          </div>
+
+          <!-- 2. 풀이 메모 -->
+          <div class="p-3 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-1.5">
+            <div class="flex items-center justify-between text-amber-900">
+              <span class="flex items-center gap-1 font-black">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span>[풀이 메모]</span>
+              </span>
+              <span class="text-[10px] text-amber-700 font-normal">수업 멈춘 문항 & 다음 시작점</span>
+            </div>
+            <textarea id="modalMemoSolve" rows="2" placeholder="예: 앞면 4번 풀다 종 침. 다음 시간 5번부터 시작!" class="w-full p-2 bg-white border border-amber-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+          </div>
+
+          <!-- 3. 검사 메모 -->
+          <div class="p-3 rounded-2xl bg-blue-50/60 border border-blue-200 space-y-1.5">
+            <div class="flex items-center justify-between text-blue-900">
+              <span class="flex items-center gap-1 font-black">
+                <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                <span>[검사 메모]</span>
+              </span>
+              <span class="text-[10px] text-blue-700 font-normal">도장 확인 및 미제출자 관리</span>
+            </div>
+            <textarea id="modalMemoCheck" rows="2" placeholder="예: 12번, 17번 미제출 (다음 시간 시작 전 확인 요망)" class="w-full p-2 bg-white border border-blue-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600"></textarea>
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
+          <button onclick="closeMemoModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200">닫기</button>
+          <button onclick="saveSplitMemo()" class="px-5 py-2 rounded-xl text-xs font-black bg-brand-600 hover:bg-brand-700 text-white shadow-xs">저장하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 모달 3: 환경 설정 및 데이터 관리 ================= -->
+    <div id="settingsModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-xs hidden p-0 sm:p-3">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl max-h-[88vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden animate-in slide-in-from-bottom duration-200">
+        
+        <div class="px-4 py-3.5 border-b border-slate-200 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
+              <i data-lucide="sliders" class="w-4 h-4"></i>
+            </div>
+            <h3 class="text-sm font-black text-slate-900">환경 설정 및 데이터 관리</h3>
+          </div>
+          <button onclick="closeSettingsModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div class="p-4 overflow-y-auto space-y-4 text-xs font-semibold text-slate-700">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block mb-1 text-slate-600">선생님 이름</label>
+              <input type="text" id="setTeacherName" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div>
+              <label class="block mb-1 text-slate-600">과목명</label>
+              <input type="text" id="setSubjectName" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+          </div>
+
+          <hr class="border-slate-100">
+
+          <div>
+            <span class="block text-slate-900 font-black mb-1.5">📊 엑셀 및 데이터 백업</span>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="exportExcelFile()" class="p-2.5 rounded-xl bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 font-black flex items-center justify-center gap-1.5 transition">
+                <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i>
+                <span>엑셀(.xlsx) 저장</span>
+              </button>
+              <button onclick="exportJsonBackup()" class="p-2.5 rounded-xl bg-indigo-50 text-indigo-800 hover:bg-indigo-100 border border-indigo-200 font-black flex items-center justify-center gap-1.5 transition">
+                <i data-lucide="download" class="w-4 h-4 text-indigo-600"></i>
+                <span>JSON 백업 파일</span>
+              </button>
+            </div>
+          </div>
+
+          <hr class="border-slate-100">
+
+          <div class="p-3 bg-rose-50 rounded-2xl border border-rose-100 flex items-center justify-between">
+            <div>
+              <p class="font-black text-rose-800">전체 초기화</p>
+              <p class="text-[10px] text-rose-600 font-normal">모든 진도 체크와 시간표 데이터를 지웁니다.</p>
+            </div>
+            <button onclick="resetAllDataConfirm()" class="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs transition">
+              초기화
+            </button>
+          </div>
+        </div>
+
+        <div class="px-4 py-3 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
+          <button onclick="closeSettingsModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200">취소</button>
+          <button onclick="saveSettingsConfig()" class="px-5 py-2 rounded-xl text-xs font-black bg-brand-600 hover:bg-brand-700 text-white shadow-xs">저장 완료</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= 핵심 자바스크립트 로직 ================= -->
+  <script>
+    // 상태 저장소 키
+    const STORAGE_KEY = 'smart_lesson_checklist_v3_state';
+
+    // 기본 앱 상태
+    let appState = {
+      isConfigured: false,
+      teacherName: '김선생',
+      subjectName: '공통수학',
+      semester: '1학기',
+      weeklyCount: 3,
+      grades: [1],
+      classes: ['1-1', '1-2', '1-3', '1-4', '1-5'],
+      // 차시별 수업 주제 목록 (1차시부터 16차시까지 기본값)
+      sessionTopics: {
+        1: '1차시: 대단원 도입 및 핵심 개념',
+        2: '2차시: 기본 유형 익히기 및 예제',
+        3: '3차시: 소단원 탐구 모둠 활동',
+        4: '4차시: 형성평가 및 1차 피드백'
+      },
+      // 주간 시간표 데이터: { "월-1": "1-1", "월-2": "1-3", ... }
+      timetable: {
+        "월-1": "1-1",
+        "월-3": "1-2",
+        "화-2": "1-3",
+        "수-4": "1-4",
+        "목-1": "1-5"
+      },
+      // 각 반별 진행 상태: { [classKey]: { currentSession: 1, currentStep: 'none' | 'dist' | 'solve' | 'check', sessions: { 1: { step: 'dist', date: '', memoDist: '', memoSolve: '', memoCheck: '' } } } }
+      progress: {},
+      expandedRowKey: null // 매트릭스 확장 행 키 (예: "1-1-1")
+    };
+
+    // 현재 활성화된 메모 타겟 변수
+    let activeMemoTarget = { classKey: null, sessionNo: 1 };
+
+    // --- 1. 앱 초기화 ---
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      lucide.createIcons();
+
+      if (!appState.isConfigured) {
+        showScreen('onboarding');
+      } else {
+        updateHeader();
+        showScreen('main');
+        renderMainClassList();
+      }
+      initTimetableAlarmChecker();
+    });
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          appState = { ...appState, ...JSON.parse(raw) };
+        }
+      } catch (e) {
+        console.error('State load error', e);
+      }
+      ensureClassProgressStructure();
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        console.error('State save error', e);
+      }
+    }
+
+    function ensureClassProgressStructure() {
+      if (!appState.progress) appState.progress = {};
+      if (!appState.sessionTopics) appState.sessionTopics = {};
+      if (!appState.timetable) appState.timetable = {};
+
+      appState.classes.forEach(cls => {
+        if (!appState.progress[cls]) {
+          appState.progress[cls] = {
+            currentSession: 1,
+            currentStep: 'none', // 'none' | 'dist' | 'solve' | 'check'
+            sessions: {
+              1: {
+                step: 'none',
+                date: '',
+                memoDist: '',
+                memoSolve: '',
+                memoCheck: ''
+              }
+            }
+          };
+        }
+      });
+    }
+
+    function updateHeader() {
+      document.getElementById('headerSubject').textContent = appState.subjectName || '과목명';
+      document.getElementById('headerTeacher').textContent = `${appState.teacherName} 선생님`;
+      document.getElementById('headerSemester').textContent = appState.semester || '1학기';
+    }
+
+    function showScreen(screenId) {
+      ['onboarding', 'main', 'matrixDashboard'].forEach(id => {
+        const el = document.getElementById(`screen-${id}`);
+        if (el) el.classList.add('hidden');
+      });
+      const target = document.getElementById(`screen-${screenId}`);
+      if (target) {
+        target.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      lucide.createIcons();
+    }
+
+    function navigateTo(screenName) {
+      if (screenName === 'matrixDashboard') {
+        renderMatrixView();
+      } else if (screenName === 'main') {
+        renderMainClassList();
+      }
+      showScreen(screenName);
+    }
+
+    // --- 2. 온보딩 설정 처리 ---
+    function toggleChip(btn) {
+      btn.classList.toggle('active');
+      if (btn.classList.contains('active')) {
+        btn.classList.add('bg-brand-600', 'text-white', 'border-brand-600');
+        btn.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
+      } else {
+        btn.classList.remove('bg-brand-600', 'text-white', 'border-brand-600');
+        btn.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
+      }
+    }
+
+    function handleOnboardingSubmit(e) {
+      e.preventDefault();
+      
+      const teacher = document.getElementById('obTeacherName').value.trim() || '선생님';
+      const subject = document.getElementById('obSubjectName').value.trim() || '공통교과';
+      const semester = document.getElementById('obSemester').value;
+      const weekly = parseInt(document.getElementById('obWeeklyCount').value, 10);
+      
+      const gradeChips = document.querySelectorAll('#obGradeChips .chip.active');
+      const selectedGrades = Array.from(gradeChips).map(c => parseInt(c.dataset.val, 10));
+      
+      const classChips = document.querySelectorAll('#obClassChips .chip.active');
+      const selectedClassNums = Array.from(classChips).map(c => parseInt(c.dataset.val, 10));
+
+      if (selectedGrades.length === 0 || selectedClassNums.length === 0) return;
+
+      const generatedClasses = [];
+      selectedGrades.forEach(g => {
+        selectedClassNums.forEach(c => {
+          generatedClasses.push(`${g}-${c}`);
+        });
+      });
+
+      appState.teacherName = teacher;
+      appState.subjectName = subject;
+      appState.semester = semester;
+      appState.weeklyCount = weekly;
+      appState.grades = selectedGrades;
+      appState.classes = generatedClasses;
+      appState.isConfigured = true;
+
+      ensureClassProgressStructure();
+      saveState();
+      updateHeader();
+      showScreen('main');
+      renderMainClassList();
+
+      confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+    }
+
+    // --- 3. [1-1]~[1-5] 원터치 즉시 상태 전환 및 [풀이][메모][취소] 버튼 로직 ---
+    function renderMainClassList() {
+      const container = document.getElementById('mainClassList');
+      if (!container) return;
+
+      let html = '';
+
+      appState.classes.forEach(cls => {
+        const clsData = appState.progress[cls];
+        const curSessionNo = clsData.currentSession || 1;
+        const curStep = clsData.currentStep || 'none'; // 'none' | 'dist' | 'solve' | 'check'
+        const sData = clsData.sessions[curSessionNo] || { date: '', memoDist: '', memoSolve: '', memoCheck: '' };
+
+        // 현재 차시 수업 주제
+        const topicText = appState.sessionTopics[curSessionNo] || `${curSessionNo}차시 수업`;
+
+        // 카드 테마 스타일링 (상태별 색상 변경)
+        let cardBgClass = 'bg-white border-slate-200';
+        let badgeClass = 'bg-slate-100 text-slate-500';
+        let stepText = '수업 대기 (터치 시 배포)';
+        let isWaiting = curStep === 'none';
+
+        if (curStep === 'dist') {
+          // 1단계: 배포 (청록색)
+          cardBgClass = 'bg-cyan-50/70 border-cyan-300 ring-2 ring-cyan-400/30';
+          badgeClass = 'bg-cyan-500 text-white font-black';
+          stepText = '[1단계: 배포 완료]';
+        } else if (curStep === 'solve') {
+          // 2단계: 풀이 진행 (주황/노랑색)
+          cardBgClass = 'bg-amber-50/80 border-amber-300 ring-2 ring-amber-400/30';
+          badgeClass = 'bg-amber-500 text-white font-black';
+          stepText = '[2단계: 풀이 진행중]';
+        } else if (curStep === 'check') {
+          // 3단계: 최종 검사 완료 (파란색)
+          cardBgClass = 'bg-blue-50/80 border-blue-300 ring-2 ring-blue-500/30';
+          badgeClass = 'bg-blue-600 text-white font-black';
+          stepText = '[3단계: 검사 완료]';
+        }
+
+        html += `
+          <div class="rounded-2xl border ${cardBgClass} p-3.5 shadow-xs transition-all">
+            <!-- 상단: 누르기만 하면 즉시 [배포]로 인식하는 반 버튼 -->
+            <button onclick="handleMainClassButtonClick('${cls}')" class="w-full flex items-center justify-between text-left active:scale-[0.98] transition">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl font-black text-slate-900 tracking-tight">${cls}</span>
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-black text-slate-800">${curSessionNo}차시</span>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full ${badgeClass}">${stepText}</span>
+                  </div>
+                  <p class="text-[11px] text-slate-500 font-medium truncate max-w-[210px] mt-0.5">${topicText}</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] text-slate-400 font-bold block">${sData.date ? sData.date.slice(5) : '미시작'}</span>
+                <i data-lucide="${isWaiting ? 'play-circle' : 'chevron-down'}" class="w-5 h-5 text-slate-400 inline-block mt-0.5"></i>
+              </div>
+            </button>
+        `;
+
+        // 진행 중일 때 ([배포] 또는 [풀이] 상태일 때) 하단에 활성화되는 3개 전용 버튼
+        if (!isWaiting) {
+          html += `
+            <div class="mt-3 pt-3 border-t border-slate-200/80 grid grid-cols-3 gap-2">
+          `;
+
+          if (curStep === 'dist') {
+            // [배포] 상태일 때: [풀이 진행] + [메모] + [취소]
+            html += `
+              <button onclick="advanceClassStep('${cls}', 'solve')" class="py-2.5 px-2 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-black text-xs shadow-xs flex items-center justify-center gap-1 transition">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                <span>[풀이]</span>
+              </button>
+              <button onclick="openSplitMemoModal('${cls}', ${curSessionNo})" class="py-2.5 px-2 rounded-xl bg-slate-800 hover:bg-slate-900 active:scale-95 text-white font-black text-xs shadow-xs flex items-center justify-center gap-1 transition">
+                <i data-lucide="file-text" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>[메모]</span>
+              </button>
+              <button onclick="rollbackClassStep('${cls}')" class="py-2.5 px-2 rounded-xl bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-700 font-black text-xs flex items-center justify-center gap-1 transition" title="잘못 눌렀을 때 취소">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                <span>[취소]</span>
+              </button>
+            `;
+          } else if (curStep === 'solve') {
+            // [풀이] 상태일 때: [검사완료(파란색)] + [메모] + [취소(배포로 롤백)]
+            html += `
+              <button onclick="advanceClassStep('${cls}', 'check')" class="py-2.5 px-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-xs shadow-xs flex items-center justify-center gap-1 transition">
+                <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                <span>[검사완료]</span>
+              </button>
+              <button onclick="openSplitMemoModal('${cls}', ${curSessionNo})" class="py-2.5 px-2 rounded-xl bg-slate-800 hover:bg-slate-900 active:scale-95 text-white font-black text-xs shadow-xs flex items-center justify-center gap-1 transition">
+                <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-400"></i>
+                <span>[메모]</span>
+              </button>
+              <button onclick="rollbackClassStep('${cls}')" class="py-2.5 px-2 rounded-xl bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-700 font-black text-xs flex items-center justify-center gap-1 transition" title="배포 단계로 되돌림">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                <span>[취소]</span>
+              </button>
+            `;
+          } else if (curStep === 'check') {
+            // [검사 완료] 상태일 때: [다음차시 배포 시작] + [메모] + [취소]
+            html += `
+              <button onclick="startNextSession('${cls}')" class="col-span-2 py-2.5 px-2 rounded-xl bg-brand-600 hover:bg-brand-700 active:scale-95 text-white font-black text-xs shadow-xs flex items-center justify-center gap-1 transition">
+                <i data-lucide="arrow-right-circle" class="w-4 h-4"></i>
+                <span>다음 ${curSessionNo + 1}차시 배포 시작</span>
+              </button>
+              <button onclick="openSplitMemoModal('${cls}', ${curSessionNo})" class="py-2.5 px-2 rounded-xl bg-slate-800 hover:bg-slate-900 active:scale-95 text-white font-black text-xs shadow-xs flex items-center justify-center gap-1 transition">
+                <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-400"></i>
+                <span>[메모]</span>
+              </button>
+            `;
+          }
+
+          html += `</div>`;
+        }
+
+        html += `</div>`;
+      });
+
+      container.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    // 메인 반 카드 본체 클릭 시: 미시작이면 즉시 [배포]로 전환!
+    function handleMainClassButtonClick(cls) {
+      const clsData = appState.progress[cls];
+      if (clsData.currentStep === 'none') {
+        advanceClassStep(cls, 'dist');
+      }
+    }
+
+    // 단계 전진 함수 (none -> dist -> solve -> check)
+    function advanceClassStep(cls, targetStep) {
+      const clsData = appState.progress[cls];
+      const curSessionNo = clsData.currentSession;
+      
+      clsData.currentStep = targetStep;
+      if (!clsData.sessions[curSessionNo]) {
+        clsData.sessions[curSessionNo] = { step: 'none', date: '', memoDist: '', memoSolve: '', memoCheck: '' };
+      }
+
+      clsData.sessions[curSessionNo].step = targetStep;
+
+      // 현재 날짜/시간 자동 기록 (YYYY-MM-DD HH:mm)
+      const now = new Date();
+      const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      clsData.sessions[curSessionNo].date = timestamp;
+
+      // 검사 완료(최종 단계) 도달 시 축하 이펙트!
+      if (targetStep === 'check') {
+        confetti({
+          particleCount: 50,
+          spread: 55,
+          origin: { y: 0.7 }
+        });
+      }
+
+      saveState();
+      renderMainClassList();
+    }
+
+    // [취소] 버튼 처리 (잘못 눌렀을 때 직전 단계로 롤백)
+    function rollbackClassStep(cls) {
+      const clsData = appState.progress[cls];
+      const curStep = clsData.currentStep;
+      const curSessionNo = clsData.currentSession;
+
+      if (curStep === 'dist') {
+        // 배포 취소 -> 미시작 상태로 초기화
+        clsData.currentStep = 'none';
+        clsData.sessions[curSessionNo].step = 'none';
+        clsData.sessions[curSessionNo].date = '';
+      } else if (curStep === 'solve') {
+        // 풀이 취소 -> 배포 단계로 되돌림
+        clsData.currentStep = 'dist';
+        clsData.sessions[curSessionNo].step = 'dist';
+      } else if (curStep === 'check') {
+        // 검사 취소 -> 풀이 단계로 되돌림
+        clsData.currentStep = 'solve';
+        clsData.sessions[curSessionNo].step = 'solve';
+      }
+
+      saveState();
+      renderMainClassList();
+    }
+
+    // 다음 차시로 승급 및 배포 시작
+    function startNextSession(cls) {
+      const clsData = appState.progress[cls];
+      clsData.currentSession += 1;
+      const nextNo = clsData.currentSession;
+      
+      clsData.currentStep = 'dist';
+      clsData.sessions[nextNo] = {
+        step: 'dist',
+        date: getNowTimestamp(),
+        memoDist: '',
+        memoSolve: '',
+        memoCheck: ''
+      };
+
+      saveState();
+      renderMainClassList();
+    }
+
+    function getNowTimestamp() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    }
+
+    // --- 4. [배포 / 풀이 / 검사] 3단 분할 메모 모달 관리 ---
+    function openSplitMemoModal(cls, sessionNo) {
+      activeMemoTarget = { classKey: cls, sessionNo: sessionNo };
+      const sData = appState.progress[cls]?.sessions?.[sessionNo] || { memoDist: '', memoSolve: '', memoCheck: '' };
+
+      document.getElementById('memoModalTitle').textContent = `${cls} (${sessionNo}차시) 수업 메모`;
+      document.getElementById('modalMemoDist').value = sData.memoDist || '';
+      document.getElementById('modalMemoSolve').value = sData.memoSolve || '';
+      document.getElementById('modalMemoCheck').value = sData.memoCheck || '';
+
+      document.getElementById('memoSplitModal').classList.remove('hidden');
+    }
+
+    function closeMemoModal() {
+      document.getElementById('memoSplitModal').classList.add('hidden');
+    }
+
+    function saveSplitMemo() {
+      const { classKey, sessionNo } = activeMemoTarget;
+      if (!classKey) return;
+
+      const clsData = appState.progress[classKey];
+      if (!clsData.sessions[sessionNo]) {
+        clsData.sessions[sessionNo] = { step: 'none', date: '', memoDist: '', memoSolve: '', memoCheck: '' };
+      }
+
+      clsData.sessions[sessionNo].memoDist = document.getElementById('modalMemoDist').value.trim();
+      clsData.sessions[sessionNo].memoSolve = document.getElementById('modalMemoSolve').value.trim();
+      clsData.sessions[sessionNo].memoCheck = document.getElementById('modalMemoCheck').value.trim();
+
+      saveState();
+      closeMemoModal();
+      if (!document.getElementById('screen-matrixDashboard').classList.contains('hidden')) {
+        renderMatrixView();
+      }
+    }
+
+    // --- 5. [진도확인하기] 종합표 + 차시별 수업 주제 + 아코디언 확장 메모 ---
+    function renderMatrixView() {
+      const theadRow = document.getElementById('matrixTheadRow');
+      const tbody = document.getElementById('matrixTbody');
+      const topicContainer = document.getElementById('topicInputContainer');
+
+      // 1. 최대 차시 계산 (최소 16차시)
+      let maxSession = 16;
+      appState.classes.forEach(c => {
+        const sKeys = Object.keys(appState.progress[c]?.sessions || {}).map(Number);
+        if (sKeys.length > 0) maxSession = Math.max(maxSession, ...sKeys);
+      });
+
+      // 2. 상단 차시별 수업 주제 입력 칩 목록
+      let topicChipsHtml = '';
+      for (let s = 1; s <= maxSession; s++) {
+        const curTopic = appState.sessionTopics[s] || '';
+        topicChipsHtml += `
+          <div class="flex-shrink-0 flex items-center gap-1 bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 shadow-2xs">
+            <span class="font-extrabold text-brand-700 text-xs">${s}차시:</span>
+            <input type="text" value="${curTopic}" oninput="updateSessionTopic(${s}, this.value)" placeholder="수업 주제 입력..." class="w-36 text-xs text-slate-800 font-semibold focus:outline-none">
+          </div>
+        `;
+      }
+      topicContainer.innerHTML = topicChipsHtml;
+
+      // 3. Thead 행 구성
+      let theadHtml = `<th class="p-2 border border-slate-200 bg-slate-100 min-w-[70px] text-xs">차시 / 주제</th>`;
+      appState.classes.forEach(c => {
+        theadHtml += `<th class="p-2 border border-slate-200 bg-slate-100 min-w-[62px] font-black text-slate-800 text-xs">${c}</th>`;
+      });
+      theadRow.innerHTML = theadHtml;
+
+      // 4. Tbody 행 구성 (셀 클릭 시 표 확장)
+      let tbodyHtml = '';
+      for (let s = 1; s <= maxSession; s++) {
+        const topicText = appState.sessionTopics[s] ? `<span class="block text-[9px] text-slate-400 font-normal truncate max-w-[75px]">${appState.sessionTopics[s]}</span>` : '';
+        
+        tbodyHtml += `<tr class="hover:bg-slate-50/70 transition">`;
+        tbodyHtml += `
+          <td class="p-2 border border-slate-200 font-black text-slate-700 bg-slate-50/70 text-[11px] leading-tight">
+            ${s}차시
+            ${topicText}
+          </td>
+        `;
+
+        appState.classes.forEach(c => {
+          const sData = appState.progress[c]?.sessions?.[s];
+          const rowKey = `${c}-${s}`;
+          const isExpanded = appState.expandedRowKey === rowKey;
+
+          let badgeHtml = '<span class="text-slate-300 text-[10px]">-</span>';
+
+          if (sData && sData.step && sData.step !== 'none') {
+            if (sData.step === 'dist') {
+              badgeHtml = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-100 text-cyan-800 border border-cyan-200">배포</span>`;
+            } else if (sData.step === 'solve') {
+              badgeHtml = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">풀이</span>`;
+            } else if (sData.step === 'check') {
+              badgeHtml = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-600 text-white">완료</span>`;
+            }
+          }
+
+          tbodyHtml += `
+            <td onclick="toggleExpandRow('${rowKey}')" class="p-1.5 border border-slate-200 cursor-pointer ${isExpanded ? 'bg-indigo-50 font-bold' : 'hover:bg-slate-50'} transition">
+              ${badgeHtml}
+            </td>
+          `;
+        });
+
+        tbodyHtml += `</tr>`;
+
+        // 만약 이 차시의 어떤 반 셀이 클릭되어 확장되었다면, 아코디언 행을 아래로 시원하게 삽입!
+        appState.classes.forEach(c => {
+          const rowKey = `${c}-${s}`;
+          if (appState.expandedRowKey === rowKey) {
+            const sData = appState.progress[c]?.sessions?.[s] || { date: '', memoDist: '', memoSolve: '', memoCheck: '' };
+            const colSpan = appState.classes.length + 1;
+
+            tbodyHtml += `
+              <tr class="bg-indigo-50/90 border-2 border-brand-500 animate-in fade-in duration-200">
+                <td colspan="${colSpan}" class="p-3 text-left">
+                  <div class="space-y-2">
+                    <div class="flex items-center justify-between border-b border-indigo-200 pb-1.5">
+                      <div class="flex items-center gap-2">
+                        <span class="text-xs font-black text-brand-900">[확장 상세] ${c} - ${s}차시 진도 일지</span>
+                        <span class="text-[11px] text-slate-500">수업일시: <strong>${sData.date || '미기록'}</strong></span>
+                      </div>
+                      <button onclick="toggleExpandRow('${rowKey}')" class="text-xs text-brand-700 font-bold hover:underline">▲ 접기</button>
+                    </div>
+
+                    <!-- 3단 메모 펼침 카드 -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                      <div class="p-2 bg-white rounded-xl border border-cyan-200">
+                        <span class="font-bold text-cyan-800 block mb-0.5">📦 [배포 메모]</span>
+                        <p class="text-[11px] text-slate-600">${sData.memoDist || '<span class="text-slate-300">메모 없음</span>'}</p>
+                      </div>
+                      <div class="p-2 bg-white rounded-xl border border-amber-200">
+                        <span class="font-bold text-amber-800 block mb-0.5">✏️ [풀이 메모 (멈춘 지점)]</span>
+                        <p class="text-[11px] text-slate-600">${sData.memoSolve || '<span class="text-slate-300">메모 없음</span>'}</p>
+                      </div>
+                      <div class="p-2 bg-white rounded-xl border border-blue-200">
+                        <span class="font-bold text-blue-800 block mb-0.5">✅ [검사 메모 (제출/도장)]</span>
+                        <p class="text-[11px] text-slate-600">${sData.memoCheck || '<span class="text-slate-300">메모 없음</span>'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }
+        });
+      }
+
+      tbody.innerHTML = tbodyHtml;
+    }
+
+    function toggleExpandRow(rowKey) {
+      if (appState.expandedRowKey === rowKey) {
+        appState.expandedRowKey = null; // 다시 누르면 원래대로 닫힘
+      } else {
+        appState.expandedRowKey = rowKey; // 누르면 해당 셀 아래로 확장
+      }
+      renderMatrixView();
+    }
+
+    function updateSessionTopic(sessionNo, val) {
+      appState.sessionTopics[sessionNo] = val;
+      saveState();
+    }
+
+    // --- 6. [⏰ 시간표] 모달 관리 및 교시별 반 배정 ---
+    function openTimetableModal() {
+      renderTimetableTable();
+      document.getElementById('timetableModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeTimetableModal() {
+      document.getElementById('timetableModal').classList.add('hidden');
+    }
+
+    function renderTimetableTable() {
+      const tbody = document.getElementById('timetableTbody');
+      const days = ['월', '화', '수', '목', '금'];
+      let html = '';
+
+      for (let period = 1; period <= 7; period++) {
+        html += `<tr class="hover:bg-slate-50">`;
+        html += `<td class="p-2 border-r border-slate-200 font-black text-slate-700 bg-slate-50">${period}교시</td>`;
+
+        days.forEach(day => {
+          const key = `${day}-${period}`;
+          const assignedClass = appState.timetable[key] || '';
+
+          html += `
+            <td class="p-1 border-r border-slate-200">
+              <button onclick="cycleTimetableClass('${key}')" class="w-full py-2 px-1 rounded-lg text-xs font-black transition ${assignedClass ? 'bg-indigo-600 text-white shadow-2xs' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}">
+                ${assignedClass || '+'}
+              </button>
+            </td>
+          `;
+        });
+
+        html += `</tr>`;
+      }
+
+      tbody.innerHTML = html;
+    }
+
+    // 교시 버튼을 누를 때마다 담당 반이 순환하며 배정 (비어있음 -> 1-1 -> 1-2 -> ... -> 1-5 -> 비어있음)
+    function cycleTimetableClass(key) {
+      const classList = ['', ...appState.classes];
+      const current = appState.timetable[key] || '';
+      const currentIndex = classList.indexOf(current);
+      const nextIndex = (currentIndex + 1) % classList.length;
+      
+      const nextClass = classList[nextIndex];
+      if (nextClass) {
+        appState.timetable[key] = nextClass;
+      } else {
+        delete appState.timetable[key];
+      }
+
+      saveState();
+      renderTimetableTable();
+    }
+
+    // 시간표 기반 알림 타이머 감지 로직
+    function initTimetableAlarmChecker() {
+      if ('Notification' in window && Notification.permission !== 'granted') {
+        Notification.requestPermission();
+      }
+    }
+
+    function testBrowserNotification() {
+      if (!('Notification' in window)) {
+        return;
+      }
+
+      if (Notification.permission === 'granted') {
+        showSampleNotification();
+      } else {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            showSampleNotification();
+          }
+        });
+      }
+    }
+
+    function showSampleNotification() {
+      const noti = new Notification('수업진도 체크리스트 알림', {
+        body: '[1-1] 수업이 종료되었습니다. 지금 진도를 체크하세요!',
+        icon: 'https://placehold.co/128x128/4f46e5/ffffff?text=Class'
+      });
+      noti.onclick = () => {
+        window.focus();
+        showScreen('main');
+      };
+    }
+
+    // --- 7. EXCEL (.XLSX) 다운로드 기능 ---
+    function exportExcelFile() {
+      try {
+        const wb = XLSX.utils.book_new();
+
+        // 1. 시트 1: 종합 매트릭스 시트
+        let maxSession = 16;
+        appState.classes.forEach(c => {
+          const sKeys = Object.keys(appState.progress[c]?.sessions || {}).map(Number);
+          if (sKeys.length > 0) maxSession = Math.max(maxSession, ...sKeys);
+        });
+
+        const matrixData = [
+          ['차시', '수업 주제', ...appState.classes]
+        ];
+
+        for (let s = 1; s <= maxSession; s++) {
+          const row = [`${s}차시`, appState.sessionTopics[s] || ''];
+          appState.classes.forEach(c => {
+            const sData = appState.progress[c]?.sessions?.[s];
+            if (!sData || !sData.step || sData.step === 'none') {
+              row.push('미진행');
+            } else if (sData.step === 'dist') {
+              row.push('배포');
+            } else if (sData.step === 'solve') {
+              row.push('풀이');
+            } else if (sData.step === 'check') {
+              row.push('완료');
+            }
+          });
+          matrixData.push(row);
+        }
+
+        const wsMatrix = XLSX.utils.aoa_to_sheet(matrixData);
+        XLSX.utils.book_append_sheet(wb, wsMatrix, '종합진도표');
+
+        // 2. 시트 2: 3단 메모 상세 일지 시트
+        const detailData = [
+          ['학급', '차시', '진행단계', '수업일시', '배포 메모', '풀이 메모', '검사 메모']
+        ];
+
+        appState.classes.forEach(c => {
+          const sessions = appState.progress[c]?.sessions || {};
+          Object.keys(sessions).map(Number).sort((a,b) => a - b).forEach(sNo => {
+            const sData = sessions[sNo];
+            if (sData.step && sData.step !== 'none') {
+              detailData.push([
+                c,
+                `${sNo}차시`,
+                sData.step,
+                sData.date || '-',
+                sData.memoDist || '',
+                sData.memoSolve || '',
+                sData.memoCheck || ''
+              ]);
+            }
+          });
+        });
+
+        const wsDetail = XLSX.utils.aoa_to_sheet(detailData);
+        XLSX.utils.book_append_sheet(wb, wsDetail, '단계별_메모일지');
+
+        const fileName = `${appState.subjectName}_진도체크리스트_${appState.teacherName}_${new Date().toISOString().slice(0,10)}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+      } catch (err) {
+        console.error('Excel Export Error', err);
+      }
+    }
+
+    // --- 8. 설정 모달 및 데이터 백업 / 복원 ---
+    function openSettingsModal() {
+      document.getElementById('setTeacherName').value = appState.teacherName;
+      document.getElementById('setSubjectName').value = appState.subjectName;
+      document.getElementById('settingsModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('settingsModal').classList.add('hidden');
+    }
+
+    function saveSettingsConfig() {
+      appState.teacherName = document.getElementById('setTeacherName').value.trim() || '선생님';
+      appState.subjectName = document.getElementById('setSubjectName').value.trim() || '공통교과';
+
+      saveState();
+      updateHeader();
+      closeSettingsModal();
+      renderMainClassList();
+    }
+
+    function exportJsonBackup() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `수업진도_백업_${appState.subjectName}_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function resetAllDataConfirm() {
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    }
+  </script>
+</body>
+</html>
