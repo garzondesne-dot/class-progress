@@ -234,7 +234,11 @@
           </span>
           <span class="text-[10px] text-slate-400">입력 즉시 자동 저장</span>
         </div>
-        <div id="topicInputContainer" class="grid grid-cols-1 gap-2 py-1">
+        <div class="flex items-center justify-between gap-2">
+          <span id="topicEditorSummary" class="text-[11px] text-slate-500 truncate">입력한 수업 내용은 아래 진도표에도 표시됩니다.</span>
+          <button type="button" onclick="toggleTopicEditor()" id="topicEditorToggle" class="shrink-0 bg-indigo-600 text-white rounded-lg px-3 py-2 text-xs font-bold">수업 내용 편집 ▼</button>
+        </div>
+        <div id="topicInputContainer" class="hidden grid grid-cols-1 gap-2 py-1 max-h-[260px] overflow-y-auto overscroll-contain">
           <!-- JS로 차시별 주제 칩/입력창 동적 생성 -->
         </div>
       </div>
@@ -663,17 +667,17 @@
         }
 
         html += `
-          <div class="rounded-2xl border ${cardBgClass} p-3.5 shadow-xs transition-all">
+          <div class="rounded-xl border ${cardBgClass} px-3 py-2 shadow-xs transition-all">
             <!-- 상단: 누르기만 하면 즉시 [배포]로 인식하는 반 버튼 -->
-            <button onclick="handleMainClassButtonClick('${cls}')" class="w-full flex items-center justify-between text-left active:scale-[0.98] transition min-h-[72px]">
-              <div class="flex items-center gap-3">
-                <span class="text-2xl font-black text-slate-900 tracking-tight">${cls}</span>
+            <button onclick="handleMainClassButtonClick('${cls}')" class="w-full flex items-center justify-between text-left active:scale-[0.98] transition min-h-[46px]">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="text-xl font-black text-slate-900 tracking-tight">${cls}</span>
                 <div>
                   <div class="flex items-center gap-1.5">
-                    <span class="text-xs font-black text-slate-800">${curSessionNo}차시</span>
-                    <span class="text-[10px] px-2 py-0.5 rounded-full ${badgeClass}">${stepText}</span>
+                    <span class="text-xs font-black text-slate-800 whitespace-nowrap">${curSessionNo}차시</span>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded-full ${badgeClass}">${stepText}</span>
                   </div>
-                  <p class="text-[11px] text-slate-500 font-medium truncate max-w-[210px] mt-0.5">${topicText}</p>
+                  <p class="text-[11px] text-slate-500 font-medium truncate max-w-[190px]">${topicText}</p>
                 </div>
               </div>
               <div class="text-right">
@@ -683,59 +687,13 @@
             </button>
         `;
 
-        // 진행 중일 때 ([배포] 또는 [풀이] 상태일 때) 하단에 활성화되는 3개 전용 버튼
-        if (!isWaiting) {
-          html += `
-            <div class="mt-3 pt-3 border-t border-slate-200/80 grid grid-cols-3 gap-2">
-          `;
-
-          if (curStep === 'dist') {
-            // [배포] 상태일 때: [풀이 진행] + [메모] + [되돌아가기]
-            html += `
-              <button onclick="advanceClassStep('${cls}', 'solve')" class="py-2.5 px-2 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-black text-xs shadow-xs flex items-center justify-center gap-1 transition">
-                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                <span>[풀이]</span>
-              </button>
-              <button onclick="openSplitMemoModal('${cls}', ${curSessionNo})" class="py-2.5 px-2 rounded-xl bg-slate-800 hover:bg-slate-900 active:scale-95 text-white font-black text-xs shadow-xs flex items-center justify-center gap-1 transition">
-                <i data-lucide="file-text" class="w-3.5 h-3.5 text-amber-400"></i>
-                <span>[메모]</span>
-              </button>
-              <button onclick="rollbackClassStep('${cls}')" class="py-2.5 px-2 rounded-xl bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-700 font-black text-xs flex items-center justify-center gap-1 transition" title="잘못 눌렀을 때 취소">
-                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-                <span>[되돌아가기]</span>
-              </button>
-            `;
-          } else if (curStep === 'solve') {
-            // [풀이] 상태일 때: [검사완료(파란색)] + [메모] + [취소(배포로 롤백)]
-            html += `
-              <button onclick="advanceClassStep('${cls}', 'check')" class="py-2.5 px-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-xs shadow-xs flex items-center justify-center gap-1 transition">
-                <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
-                <span>[검사완료]</span>
-              </button>
-              <button onclick="openSplitMemoModal('${cls}', ${curSessionNo})" class="py-2.5 px-2 rounded-xl bg-slate-800 hover:bg-slate-900 active:scale-95 text-white font-black text-xs shadow-xs flex items-center justify-center gap-1 transition">
-                <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-400"></i>
-                <span>[메모]</span>
-              </button>
-              <button onclick="rollbackClassStep('${cls}')" class="py-2.5 px-2 rounded-xl bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-700 font-black text-xs flex items-center justify-center gap-1 transition" title="배포 단계로 되돌림">
-                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-                <span>[되돌아가기]</span>
-              </button>
-            `;
-          } else if (curStep === 'check') {
-            // [검사 완료] 상태일 때: [다음차시 배포 시작] + [메모] + [되돌아가기]
-            html += `
-              <button onclick="startNextSession('${cls}')" class=" py-2.5 px-2 rounded-xl bg-brand-600 hover:bg-brand-700 active:scale-95 text-white font-black text-xs shadow-xs flex items-center justify-center gap-1 transition">
-                <i data-lucide="arrow-right-circle" class="w-4 h-4"></i>
-                <span>다음 ${curSessionNo + 1}차시 배포 시작</span>
-              </button>
-              <button onclick="openSplitMemoModal('${cls}', ${curSessionNo})" class="py-2.5 px-2 rounded-xl bg-slate-800 hover:bg-slate-900 active:scale-95 text-white font-black text-xs shadow-xs flex items-center justify-center gap-1 transition">
-                <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-400"></i>
-                <span>[메모]</span>
-              </button>
-              <button onclick="rollbackClassStep('${cls}')" class="py-2 px-1 rounded-xl bg-slate-200 text-slate-800 font-bold text-[11px]">되돌아가기</button>
-            `;
-          }
-
+        // Large card advances the step; secondary actions remain compact.
+        html += `
+          <div class="flex justify-end items-center gap-2 -mt-1 pb-0.5">
+            <button onclick="openSplitMemoModal('${cls}', ${curSessionNo})" class="text-[11px] font-bold text-slate-600 rounded-lg px-2 py-1 bg-white/70 border border-slate-200" aria-label="${cls} 메모">메모</button>
+            <button onclick="rollbackClassStep('${cls}')" class="text-[11px] font-bold text-slate-600 rounded-lg px-2 py-1 bg-white/70 border border-slate-200" aria-label="${cls} 되돌아가기">되돌아가기</button>
+          </div>
+        `;
           html += `</div>`;
         }
 
@@ -886,6 +844,14 @@
     // --- 5. [진도확인하기] 종합표 + 차시별 수업 주제 + 아코디언 확장 메모 ---
     function escapeHtml(v) { return String(v ?? "").replace(/[&<>"\x27]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","\x27":"&#39;"}[c])); }
 
+    function toggleTopicEditor() {
+      const panel = document.getElementById('topicInputContainer');
+      const btn = document.getElementById('topicEditorToggle');
+      const open = panel.classList.contains('hidden');
+      panel.classList.toggle('hidden', !open);
+      btn.textContent = open ? '편집 닫기 ▲' : '수업 내용 편집 ▼';
+    }
+
     function renderMatrixView() {
       const theadRow = document.getElementById('matrixTheadRow');
       const tbody = document.getElementById('matrixTbody');
@@ -910,6 +876,9 @@
         `;
       }
       topicContainer.innerHTML = topicChipsHtml;
+      const count = Object.values(appState.sessionTopics || {}).filter(v => String(v || '').trim()).length;
+      const summary = document.getElementById('topicEditorSummary');
+      if (summary) summary.textContent = '수업 내용 ' + count + '개 입력됨 · 진도표 바로 보기';
 
       // 3. Thead 행 구성
       let theadHtml = `<th class="p-2 border border-slate-200 bg-slate-100 min-w-[70px] text-xs">차시 / 주제</th>`;
