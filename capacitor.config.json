@@ -1,0 +1,8 @@
+{
+  "appId": "io.github.garzondesnedot.classprogress",
+  "appName": "수업진도",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}
