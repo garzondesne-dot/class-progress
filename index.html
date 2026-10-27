@@ -1124,23 +1124,35 @@
       const starts=Array.from({length:7},(_,i)=>document.getElementById('startTime'+i).value);
       const ends=Array.from({length:7},(_,i)=>document.getElementById('alarmTime'+i).value);
       if(starts.some((t,i)=>!validTime(t)||!validTime(ends[i])||minutes(t)>=minutes(ends[i])||(i<6&&minutes(ends[i])+10>minutes(starts[i+1])))){alert('시작·종료 순서와 교시 사이 최소 10분 간격을 확인하세요.');return;}
-      appState.periodStarts=starts;appState.alarmTimes=ends;saveState();renderMainClassList();alert('수업·알림 시간 저장 완료. APK에서는 알림을 다시 예약합니다.');
+      appState.periodStarts=starts;appState.alarmTimes=ends;saveState();renderMainClassList();alert('수업·알림 시간 저장 완료. 웹앱은 실행 중에 알림을 확인하며 APK는 알림을 다시 예약합니다.');
+    }
+    async function showClassWebNotification(title, body, day, period) {
+      const openClass=()=>{window.focus();weekOffset=0;selectedDay=DAYS.indexOf(day);expandedLesson=selectedDay+'-'+period;navigateTo('main');};
+      if ('serviceWorker' in navigator) {
+        try {
+          const reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+          await reg.showNotification(title,{body,tag:'class-progress-'+day+'-'+period,data:{url:'./'}});
+          return;
+        } catch(e) { console.warn('Service worker notification unavailable',e); }
+      }
+      const n=new Notification(title,{body,tag:'class-progress-'+day+'-'+period});
+      n.onclick=()=>{openClass();n.close();};
     }
     function checkTimetableAlarm() {
-      if (!('Notification' in window) || Notification.permission !== 'granted') return;
-      const now = new Date();
-      const day = ['일','월','화','수','목','금','토'][now.getDay()];
-      if (day === '토' || day === '일') return;
-      const periodEnds = getAlarmTimes();
-      const hhmm = now.toTimeString().slice(0,5);
-      periodEnds.forEach((end, i) => {
-        if (end !== hhmm) return;
-        const cls = appState.timetable[day+'-'+(i+1)];
-        if (!cls) return;
-        const key = 'class_alarm_'+now.toDateString()+'_'+day+'_'+(i+1);
-        if (sessionStorage.getItem(key)) return;
-        sessionStorage.setItem(key,'1');
-        try { const n = new Notification('수업 진도 입력 알림', {body:cls+' 수업이 끝났습니다. 진도를 체크하세요.'}); n.onclick=()=>{window.focus();weekOffset=0;selectedDay=DAYS.indexOf(day);expandedLesson=selectedDay+'-'+(i+1);navigateTo('main');n.close();}; } catch(e) { sessionStorage.removeItem(key); console.warn(e); }
+      if (window.isNativeClassApp?.() || !('Notification' in window) || Notification.permission !== 'granted') return;
+      const now=new Date(),day=['일','월','화','수','목','금','토'][now.getDay()];
+      if(day==='토'||day==='일')return;
+      const minute=now.getHours()*60+now.getMinutes(),today=localDate(now);
+      getAlarmTimes().forEach((end,i)=>{
+        const cls=appState.timetable[day+'-'+(i+1)];if(!cls)return;
+        const elapsed=minute-minutes(end);
+        // Allow a short grace period after browser suspension; do not send stale reminders.
+        if(elapsed<0||elapsed>5)return;
+        const key='class_alarm_'+today+'_'+day+'_'+(i+1);
+        if(localStorage.getItem(key))return;
+        localStorage.setItem(key,String(Date.now()));
+        showClassWebNotification('수업 종료 · 진도 입력',cls+' '+(i+1)+'교시가 끝났습니다. 진도를 확인하세요.',day,i+1)
+          .catch(e=>{localStorage.removeItem(key);console.warn('Class notification failed',e);});
       });
     }
 
@@ -1160,7 +1172,7 @@
         if(perm!=='granted') throw new Error('Chrome 알림 권한을 허용해 주세요.');
         const reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js');
         await reg.showNotification('수업진도 테스트 알림',{body:'브라우저 알림 표시 테스트입니다.'});
-        alert('테스트 알림을 전송했습니다. 웹앱을 닫은 뒤 정시 알림을 받으려면 Firebase 서버 설정이 추가로 필요합니다.');
+        alert('웹앱 알림 테스트 완료! 웹앱이 실행 중일 때 수업 종료 알림을 받을 수 있습니다. 브라우저를 완전히 종료하면 정시 알림이 보장되지 않습니다.');
       }catch(e){alert('알림 테스트 실패: '+(e.message||e));console.error(e);}
     }
 
