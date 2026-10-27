@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'apk-native-ui.js'
       - 'package.json'
       - 'capacitor.config.json'
       - '.github/workflows/android-apk.yml'
@@ -34,6 +35,14 @@ jobs:
         run: |
           mkdir -p www
           cp index.html www/index.html
+          cp apk-native-ui.js www/apk-native-ui.js
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('www/index.html')
+          s=p.read_text()
+          s=s.replace('</body>', '<script src="./apk-native-ui.js"></script></body>')
+          p.write_text(s)
+          PY
       - name: Create and sync Android project
         run: |
           npx cap add android
