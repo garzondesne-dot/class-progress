@@ -2,7 +2,7 @@ name: Build Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [main, feature/jindonote-dark-topic, feature/jindonote-ui-polish, feature/timetable-test]
+    branches: [main, feature/jindonote-dark-topic, feature/jindonote-ui-polish]
     paths:
       - 'index.html'
       - 'apk-native-ui.js'
@@ -60,29 +60,13 @@ jobs:
           s=s.replace('</body>', '<script src="./apk-native-ui.js"></script></body>')
           p.write_text(s)
           PY
-      - name: Configure side-by-side test app
-        if: github.ref == 'refs/heads/feature/timetable-test'
-        run: |
-          python3 - <<'PYTEST'
-          import json
-          from pathlib import Path
-          path=Path('capacitor.config.json')
-          config=json.loads(path.read_text())
-          config['appId'] += '.test'
-          config['appName']='진도노트 테스트'
-          path.write_text(json.dumps(config,ensure_ascii=False,indent=2))
-          PYTEST
       - name: Create and sync Android project
         run: |
           npx cap add android
           npx cap sync android
       - name: Apply native system bar layout
         run: |
-          if [ "${{ github.ref }}" = "refs/heads/feature/timetable-test" ]; then
-            sed 's/package io.github.garzondesnedot.classprogress.connected;/package io.github.garzondesnedot.classprogress.connected.test;/' android-template/MainActivity.java > android/app/src/main/java/io/github/garzondesnedot/classprogress/connected/test/MainActivity.java
-          else
-            cp android-template/MainActivity.java android/app/src/main/java/io/github/garzondesnedot/classprogress/connected/MainActivity.java
-          fi
+          cp android-template/MainActivity.java android/app/src/main/java/io/github/garzondesnedot/classprogress/connected/MainActivity.java
       - name: Generate launcher icons
         run: |
           python -m pip install cairosvg
