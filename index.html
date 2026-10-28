@@ -169,6 +169,15 @@ html:is(.web-dark,.apk-dark) body .data-dialog>div{background:#0b1a27!important;
 html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions button:not(.confirm){background:#203447!important;color:#fff!important}
 html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions .confirm{background:#0757ef!important;color:#fff!important}
 </style>
+<style id="responsive-timetable-test">
+html body .compact-week-grid :is(.compact-side-slot,.compact-empty,.compact-lesson-wrap,.compact-lesson,.period-label){height:var(--test-row-height,49px)!important;min-height:var(--test-row-height,49px)!important;max-height:var(--test-row-height,49px)!important}
+html body .compact-week-grid .compact-session{font-size:clamp(12px,calc(var(--test-row-height,49px) * .25),17px)!important}
+html body .compact-week-grid .compact-status{font-size:clamp(11px,calc(var(--test-row-height,49px) * .21),14px)!important}
+html body .compact-week-grid .compact-topic{font-size:clamp(15px,calc(var(--test-row-height,49px) * .31),21px)!important;line-height:1.25!important}
+html body .compact-week-grid .period-label{font-size:clamp(12px,calc(var(--test-row-height,49px) * .23),16px)!important}
+html body .compact-week-grid .period-label small,html body .compact-week-grid .compact-side-slot,html body .compact-week-grid .compact-empty{font-size:clamp(11px,calc(var(--test-row-height,49px) * .22),15px)!important}
+html body .compact-week-grid .compact-meta-row{height:auto;min-height:17px;line-height:1.2}
+</style>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex justify-center selection:bg-indigo-100">
 
@@ -791,6 +800,16 @@ html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions .confirm{backgroun
         requestAnimationFrame(()=>{card.classList.remove('progress-reset');card.style.setProperty('--progress-rest',next.rest+'%');card.style.setProperty('--progress-color',next.color);card.style.setProperty('--progress-light',next.light);});
       }
     }
+    function sizeTestTimetable(){
+      const grid=document.querySelector('#mainClassList .compact-week-grid');
+      if(!grid || !grid.getClientRects().length)return;
+      const viewport=window.visualViewport?.height || window.innerHeight;
+      const available=viewport-grid.getBoundingClientRect().top-16;
+      const row=Math.max(49,Math.min(96,Math.floor((available-45-40)/7)));
+      grid.style.setProperty('--test-row-height',row+'px');
+    }
+    window.addEventListener('resize',()=>requestAnimationFrame(sizeTestTimetable));
+    window.visualViewport?.addEventListener('resize',()=>requestAnimationFrame(sizeTestTimetable));
     function renderMainClassList() {
       const container=document.getElementById('mainClassList');if(!container)return;
       const dates=weekDates(),today=localDate(new Date()),starts=getStartTimes();
@@ -824,7 +843,7 @@ html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions .confirm{backgroun
           }
         }
       }
-      container.innerHTML=html+'</div>';lucide.createIcons();renderComciStatus();
+      container.innerHTML=html+'</div>';lucide.createIcons();renderComciStatus();requestAnimationFrame(sizeTestTimetable);
     }
 
     // 메인 반 카드 본체 클릭 시: 미시작이면 즉시 [배포]로 전환!
