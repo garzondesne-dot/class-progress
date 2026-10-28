@@ -19,7 +19,7 @@ const core=scripts.find(s=>s.includes('const STORAGE_KEY')),identity=scripts.fin
 assert.ok(identity);assert.ok(html.includes('screen-identitySetup'));assert.ok(!html.includes('id="screen-onboarding"'));
 const nodes=new Map(),store=new Map(),callbacks=[],notices=[];
 class Classes{constructor(){this.classes=new Set(['hidden']);}add(c){this.classes.add(c)}remove(c){this.classes.delete(c)}contains(c){return this.classes.has(c)}toggle(c,b){if(b===undefined)b=!this.contains(c);b?this.add(c):this.remove(c);}}
-const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',textContent:'',innerHTML:'',disabled:false,checked:false,setAttribute(){},click(){},classList:new Classes(),options:[],replaceChildren(...v){this.options=v;this.value=v[0]?.value||''},add(v){this.options.push(v)}});return nodes.get(id)};
+const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',textContent:'',innerHTML:'',disabled:false,checked:false,setAttribute(){},click(){},focus(){},classList:new Classes(),options:[],replaceChildren(...v){this.options=v;this.value=v[0]?.value||''},add(v){this.options.push(v)}});return nodes.get(id)};
 const Clock=class extends Date{constructor(...a){super(...(a.length?a:['2026-10-27T10:50:00+09:00']))}};
 const context=vm.createContext({navigator:{onLine:true},location:{protocol:"file:"},Date:Clock,URL,AbortSignal,console,Option:class{constructor(text,value){this.text=text;this.value=value}},document:{hidden:false,addEventListener(){},getElementById:node},window:{lucide:{createIcons(){}},addEventListener:(event,fn)=>{if(event==='DOMContentLoaded')callbacks.push(fn)},scrollTo(){}},localStorage:{getItem:k=>store.get(k),setItem:(k,v)=>store.set(k,v)},lucide:{createIcons(){}},setInterval(){},setTimeout(){},clearTimeout(){},alert(){},fetch:async u=>({ok:true,json:async()=>new URL(u).pathname==='/api/school'?school:snapshot})});
 vm.runInContext(core,context);vm.runInContext(identity,context);
@@ -100,3 +100,13 @@ cancelled.length=0;scheduled.length=0;run('appState=newBlankState()');await run(
 console.log('PASS: native alarm reschedule, reserved ID isolation, offline timetable alarms, reset cancels old alarms');
 
 
+
+run("appState=buildOfflineState(appState,{name:'교사',subject:'수학',school:'',classes:'1-1'}); appState.sessionTopics={}");
+run("advanceClassStep('1-1','dist')");
+assert.equal(run("appState.progress['1-1'].currentStep"),'none');
+run("saveTopicAndStart()");assert.equal(run("appState.progress['1-1'].currentStep"),'none');
+run("cancelTopicStart()");assert.equal(run("appState.progress['1-1'].currentStep"),'none');
+run("advanceClassStep('1-1','dist')");node('topicInput').value='  집합  ';run("saveTopicAndStart()");
+assert.equal(run("appState.sessionTopics[1]"),'집합');assert.equal(run("appState.progress['1-1'].currentStep"),'dist');
+run("appState.progress['1-1'].currentStep='none';advanceClassStep('1-1','dist')");assert.equal(run("appState.progress['1-1'].currentStep"),'dist');
+console.log('PASS: topic required, empty and cancel preserve progress, save starts and existing topic starts immediately');
