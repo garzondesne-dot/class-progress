@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>선생님 수업진도 체크리스트 & 시간표 알리미</title>
+  <title>진도노트 | 수업진도 관리</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -97,6 +97,61 @@
 .mode-selector{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.mode-selector button{padding:14px;border:2px solid #cbd5e1;border-radius:14px;text-align:left;background:#f8fafc;color:#334155}.mode-selector button[aria-pressed=true]{border-color:#4f46e5;background:#eef2ff;color:#3730a3}.mode-selector span,.comci-announcement small{display:block;font-size:12px;margin-top:6px;line-height:1.5}.comci-announcement{padding:14px;border-radius:12px;background:#eff6ff;color:#1e40af;margin-bottom:16px;font-size:14px}.offline-form label{display:block;margin-top:13px;font-weight:700}.offline-form input{display:block;width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:9px;color:#0f172a;background:white}.offline-form p,.settings-identity p{font-size:12px;line-height:1.6;margin:10px 0}.offline-start,.restore-start,.restore-settings,.settings-identity button{padding:12px;border-radius:10px;background:#4f46e5;color:white;font-weight:700;margin-top:10px}.restore-start,.restore-settings{background:#e0e7ff;color:#3730a3;width:100%}.settings-identity{padding:12px;border:1px solid #c7d2fe;border-radius:12px}.compact-meta-row{display:flex;align-items:center;justify-content:space-between;gap:5px;flex-wrap:wrap}.compact-status{display:inline-flex!important;border-radius:999px;padding:3px 7px;background:#ffffffb3;color:#1e293b!important;border:1px solid #94a3b84d;font-size:11px!important;white-space:nowrap}.compact-session{font-size:14px!important}.compact-topic{font-size:21px!important}.compact-detail-row{grid-column:1/-1;display:grid;grid-template-columns:44px minmax(0,.56fr) minmax(0,3.5fr) minmax(0,.56fr);gap:5px}.compact-detail{grid-column:3!important;min-width:0;padding:10px!important;overflow-wrap:anywhere}.compact-detail>strong{font-size:12px;line-height:1.5}.detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}.detail-actions button{min-width:0;padding:11px 5px!important;font-size:12px}.detail-actions button:first-child{grid-column:1/-1;background:#2563eb!important;color:white}.compact-detail-summary strong{font-size:23px}.lesson-change{font-size:10px}.data-dialog{position:fixed;inset:0;background:#0f172a99;z-index:5000;display:flex;align-items:center;justify-content:center;padding:20px}.data-dialog.hidden{display:none!important}.data-dialog>div{max-width:440px;width:100%;padding:24px;border-radius:20px;background:#fff;color:#0f172a;box-shadow:0 20px 60px #0004}.data-dialog h2{font-size:21px;font-weight:800;margin-bottom:12px}.data-dialog p{font-size:14px;line-height:1.7;margin:10px 0}.data-dialog input{width:100%;border:1px solid #94a3b8;border-radius:8px;padding:10px;margin:10px 0}.data-dialog button{border-radius:8px;padding:11px;background:#e2e8f0;margin:5px}.data-dialog button.confirm{background:#2563eb;color:white}.data-dialog button.danger{background:#dc2626;color:white}.hidden{display:none!important}
 html.apk-dark .compact-status,html.web-dark .compact-status{background:#ffffff26;color:inherit!important}
 </style>
+<style id="jindonote-black">
+html.web-dark,html.web-dark body,html.apk-dark,html.apk-dark body,html.web-dark body>div:not(.data-dialog),html.apk-dark body>div:not(.data-dialog){background:#000!important;color:#f8fafc!important;color-scheme:dark}
+html.web-dark .bg-white,html.apk-dark .bg-white,html.web-dark .bg-slate-50,html.apk-dark .bg-slate-50,html.web-dark .bg-slate-100,html.apk-dark .bg-slate-100,html.web-dark .bg-gray-50,html.apk-dark .bg-gray-50{background:#101820!important;color:#f8fafc!important}
+html.web-dark .compact-empty,html.apk-dark .compact-empty,html.web-dark .compact-lesson,html.apk-dark .compact-lesson,html.web-dark .compact-side-slot,html.apk-dark .compact-side-slot{background:#18222e!important;color:#f8fafc!important}
+html.web-dark .text-slate-900,html.apk-dark .text-slate-900,html.web-dark .text-slate-800,html.apk-dark .text-slate-800{color:#f8fafc!important}
+html.web-dark .data-dialog>div,html.apk-dark .data-dialog>div{background:#101820!important;color:#f8fafc!important}
+html.web-dark input,html.apk-dark input,html.web-dark textarea,html.apk-dark textarea,html.web-dark select,html.apk-dark select{background:#18222e!important;color:#fff!important;border-color:#526174!important}
+html:is(.web-dark,.apk-dark) :is(.lesson-card,.lesson-empty,.lesson-detail,.compact-day:not(.active),.compact-expand-btn,.mode-selector button,.comci-announcement,.settings-identity,.restore-start,.restore-settings){background:#18222e!important;color:#e2e8f0!important;border-color:#475569!important}
+html:is(.web-dark,.apk-dark) :is(.compact-topic,.compact-session,.compact-chevron){color:#f1f5f9!important}
+html:is(.web-dark,.apk-dark) :is(header,.bg-white\/95){background:#101820!important}
+html:is(.web-dark,.apk-dark) .data-dialog{background:#000b!important}
+html:is(.web-dark,.apk-dark) .data-dialog button:not(.confirm):not(.danger){background:#334155;color:#fff}
+
+/* A consistent compact row, with progress visible in both themes. */
+.compact-week-grid .period-label,.compact-side-slot,.compact-empty,.compact-lesson-wrap,.compact-lesson{height:49px!important;min-height:49px!important;max-height:49px!important}
+.compact-lesson{isolation:isolate;overflow:hidden;padding-top:3px!important;padding-bottom:3px!important}
+.compact-lesson::before{content:"";position:absolute;inset:0;background:var(--progress-color,#285caa);clip-path:inset(0 var(--progress-rest,100%) 0 0);z-index:-1;transition:clip-path .65s ease-in-out,background-color .65s ease-in-out}
+html body .compact-lesson:is(.step-none,.step-dist,.step-solve,.step-check){background:#f1f5f9!important;color:#102235!important}
+html:is(.web-dark,.apk-dark) body .compact-lesson:is(.step-none,.step-dist,.step-solve,.step-check){background:#101c27!important;color:#f8fafc!important}
+.compact-lesson.progress-reset::before{transition:none!important}
+html body .compact-lesson::before{opacity:.25}
+html:is(.web-dark,.apk-dark) body .compact-lesson::before{opacity:1}
+html:is(.web-dark,.apk-dark) body .compact-lesson .compact-topic,html:is(.web-dark,.apk-dark) body .compact-lesson .compact-session{color:#fff!important}
+.compact-lesson .compact-topic{font-size:16px!important;line-height:1.1}.compact-lesson .compact-session{font-size:12px!important}.compact-lesson .compact-status{font-size:10px!important;padding:1px 5px}.compact-lesson .lesson-change{font-size:9px;line-height:1}
+@media (prefers-reduced-motion:reduce){.compact-lesson::before{transition:none}}
+
+.progress-heading{display:flex;align-items:center;gap:6px;margin:0 0 7px;padding:0 4px;min-width:0}.progress-heading h3{font-weight:800;font-size:15px;white-space:nowrap}.week-picker-wrap{position:relative;flex:none}.week-picker-wrap>button{font-size:12px;font-weight:700;border:1px solid #b8c8d8;border-radius:7px;background:#f1f5f9;color:#1e293b;padding:5px 6px;white-space:nowrap}.week-picker-menu{position:absolute;top:calc(100% + 4px);left:0;z-index:100;width:176px;padding:6px;border:1px solid #9aabbc;border-radius:10px;background:#fff;color:#172338;box-shadow:0 8px 20px #0004}.week-picker-menu button{display:block;width:100%;text-align:left;padding:8px;border-radius:6px;font-size:13px}.week-picker-menu label{display:block;padding:5px 8px 1px;font-size:11px}.week-picker-menu input{width:100%;border:1px solid #a4b3c0;border-radius:6px;padding:5px;color:#172338}.compact-sync{margin-left:auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#315fa8}.theme-setting{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid #cbd5e1;border-radius:12px;padding:12px}.theme-setting p{font-size:11px;margin-top:3px;font-weight:400}.theme-setting button{background:#285fdf;color:white;padding:8px 14px;border-radius:999px;min-width:60px}
+.compact-lesson .compact-meta-row{width:100%;min-width:0;flex-wrap:nowrap;justify-content:flex-start;gap:4px;height:17px;line-height:17px}.compact-lesson .compact-status{font-size:10px!important;line-height:12px!important;border-radius:5px!important;padding:0 3px!important;flex:none}.compact-lesson .compact-session{flex:none;line-height:16px!important}.compact-lesson .lesson-change{margin-left:auto;white-space:nowrap;font-size:10px;color:#315fa8}.compact-lesson .compact-topic{display:block;width:100%;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:19px!important;font-size:15px!important;margin:0}
+.compact-day:not(.active) b{font-size:10px}.compact-day:not(.active) small{font-size:9px}
+html:is(.web-dark,.apk-dark) body .week-picker-wrap>button,html:is(.web-dark,.apk-dark) body .week-picker-menu{background:#142535!important;color:#e8f1fc!important;border-color:#526779!important}html:is(.web-dark,.apk-dark) body .compact-sync,html:is(.web-dark,.apk-dark) body .compact-lesson .lesson-change{color:#9dc5ff!important}html:is(.web-dark,.apk-dark) body .theme-setting{border-color:#526779!important;background:#07131f!important}
+</style><link rel="icon" type="image/svg+xml" href="assets/jindonote-icon.svg"><meta name="theme-color" content="#000000">
+<style id="jindonote-reference-design">
+.app-brand{font-size:18px;font-weight:900;letter-spacing:-.03em}.header-identity{display:none}
+#topicDialog>div{position:relative;border:1px solid #475569;border-radius:20px;padding:22px 16px 16px;text-align:center;max-width:360px}
+#topicDialog .topic-close{position:absolute;right:10px;top:8px;font-size:25px;line-height:1;background:transparent!important;color:inherit;padding:4px 10px}
+#topicDialog .topic-icon{display:grid;place-items:center;width:68px;height:68px;margin:2px auto 18px;border-radius:50%;background:#314d87;font-size:34px}
+#topicDialog h2{font-size:19px;margin:0 0 12px}#topicDialog p{font-weight:400;margin:7px 0;line-height:1.55}#topicDialog label{display:block;text-align:left;font-size:12px}#topicDialog input{text-align:left;margin:8px 0 0}#topicDialog #topicError{color:#f87171;font-size:12px;text-align:left;min-height:1em;margin:2px 0}
+#topicDialog .topic-actions{display:grid;grid-template-columns:1fr 1.3fr;gap:8px}#topicDialog .topic-actions button{margin:0;min-height:48px;font-weight:800}#topicDialog .confirm{background:#0757ef;color:white}
+html:is(.web-dark,.apk-dark) body{background:#000!important;color:#edf4ff!important}
+html:is(.web-dark,.apk-dark) body>div:not(.data-dialog){background:#000!important;color:#edf4ff!important}
+html:is(.web-dark,.apk-dark) body header{background:#000!important;border-color:#263546!important}
+html:is(.web-dark,.apk-dark) body :is(#settingsModal,#timetableModal,#memoSplitModal){background:#000b!important}
+html:is(.web-dark,.apk-dark) body :is(#settingsModal,#timetableModal,#memoSplitModal)>div{background:#000!important;color:#edf4ff!important;border-color:#35475a!important}
+html:is(.web-dark,.apk-dark) body :is(#settingsModal,#timetableModal,#memoSplitModal) :is(.bg-white,.bg-slate-50,.bg-indigo-50,.bg-emerald-50,.bg-blue-50,.bg-rose-50,.bg-amber-50\/50,.settings-identity){background:#07131f!important;color:#e6edf7!important;border-color:#34495b!important}
+html:is(.web-dark,.apk-dark) body :is(#settingsModal,#timetableModal,#memoSplitModal) :is(.text-slate-900,.text-slate-800,.text-slate-700,.text-blue-900,.text-indigo-900,.text-emerald-900,.text-emerald-950,.text-rose-800){color:#f1f5f9!important}
+html:is(.web-dark,.apk-dark) body :is(#settingsModal,#timetableModal,#memoSplitModal) :is(.text-slate-500,.text-slate-600){color:#b4c2d0!important}
+html:is(.web-dark,.apk-dark) body :is(input:not([type=checkbox]),textarea,select){background:#102130!important;color:#fff!important;border-color:#526779!important}
+html:is(.web-dark,.apk-dark) body :is(.compact-side-slot,.compact-empty,.compact-lesson,.compact-day:not(.active):not(.blank),.compact-expand-btn,.lesson-detail){background:#101c27!important;color:#f8fafc!important;border-color:#354858!important}
+html:is(.web-dark,.apk-dark) body .compact-day.active{background:#0757ef!important;color:#fff!important}
+html:is(.web-dark,.apk-dark) body .compact-day.blank{background:transparent!important}
+html:is(.web-dark,.apk-dark) body :is(.compact-topic,.compact-session,.compact-status,.compact-chevron){color:#f1f5f9!important}
+html:is(.web-dark,.apk-dark) body .data-dialog>div{background:#0b1a27!important;color:#fff!important;border-color:#526779!important}
+html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions button:not(.confirm){background:#203447!important;color:#fff!important}
+html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions .confirm{background:#0757ef!important;color:#fff!important}
+</style>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex justify-center selection:bg-indigo-100">
 
@@ -107,10 +162,9 @@ html.apk-dark .compact-status,html.web-dark .compact-status{background:#ffffff26
     <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 px-3.5 py-2.5 flex items-center justify-between shadow-xs">
       <!-- 과목 및 교사 정보 -->
       <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-xs">
-          <i data-lucide="check-check" class="w-4 h-4"></i>
-        </div>
-        <div class="leading-tight">
+        <img src="assets/jindonote-icon.svg" class="w-8 h-8 rounded-xl" alt="">
+        <span class="app-brand">진도노트</span>
+        <div class="leading-tight header-identity">
           <div class="flex items-center gap-1.5">
             <span id="headerSubject" class="font-black text-slate-900 text-sm">과목명</span>
             <span id="headerSemester" class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-brand-700 border border-indigo-100">1학기</span>
@@ -183,16 +237,19 @@ html.apk-dark .compact-status,html.web-dark .compact-status{background:#ffffff26
 
       <!-- [진도입력하기] 섹션 -->
       <div class="flex-1 flex flex-col">
-        <div class="flex items-center justify-between mb-2 px-1">
-          <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-4.5 rounded-full bg-brand-600"></span>
-            <h3 class="text-base font-black text-slate-900">진도 입력하기</h3>
+        <div class="progress-heading">
+          <h3>진도 입력하기</h3>
+          <div class="week-picker-wrap"><button id="weekPickerButton" type="button" onclick="toggleWeekPicker()" aria-label="조회할 주 선택" aria-expanded="false"></button>
+            <div id="weekPicker" class="week-picker-menu hidden" aria-label="주 선택">
+              <button type="button" onclick="chooseWeekRelative(-1)">‹ 이전 주</button>
+              <button type="button" onclick="chooseCurrentWeek()">이번 주</button>
+              <button type="button" onclick="chooseWeekRelative(1)">다음 주 ›</button>
+              <label for="weekDate">날짜로 주 선택</label><input id="weekDate" type="date" onchange="chooseWeekDate(this.value)">
+            </div>
           </div>
-          <span class="text-[11px] text-slate-400 font-bold">터치하여 진도 넘어가기 · ∨ 상세보기</span>
+          <span id="comciMainStatus" class="compact-sync" role="status"></span>
         </div>
-
-        <!-- 각 반 카드 목록 (원터치 전환 및 하단 [풀이][메모][되돌아가기] 액션 버튼 포함) -->
-<p id="comciMainStatus" class="text-[11px] text-blue-700 px-1 mb-1" role="status"></p>
+        <!-- 각 반 카드 목록 -->
         <div id="mainClassList" class="flex flex-col gap-1.5">
           <!-- 동적으로 renderMainClassList()에서 렌더링 -->
         </div>
@@ -406,7 +463,7 @@ html.apk-dark .compact-status,html.web-dark .compact-status{background:#ffffff26
           </button>
         </div>
 
-        <div class="p-4 overflow-y-auto space-y-4 text-xs font-semibold text-slate-700"><div class="settings-identity"><strong>사용 모드와 선생님</strong><p>컴시간 연동·오프라인 사용을 바꾸거나 다른 선생님을 선택할 수 있습니다. 기존 프로필의 진도와 메모는 보관됩니다.</p><button type="button" onclick="openIdentitySetup()">학교·선생님 / 모드 다시 선택</button></div>
+        <div class="p-4 overflow-y-auto space-y-4 text-xs font-semibold text-slate-700"><div class="theme-setting"><div><strong>다크모드</strong><p>화면 색상 변경</p></div><button type="button" id="themeSettingToggle" role="switch" aria-checked="false" onclick="window.toggleJindonoteTheme?.()">꺼짐</button></div><div class="settings-identity"><strong>사용 모드와 선생님</strong><p>컴시간 연동·오프라인 사용을 바꾸거나 다른 선생님을 선택할 수 있습니다. 기존 프로필의 진도와 메모는 보관됩니다.</p><button type="button" onclick="openIdentitySetup()">학교·선생님 / 모드 다시 선택</button></div>
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block mb-1 text-slate-600">선생님 이름</label>
@@ -670,27 +727,62 @@ html.apk-dark .compact-status,html.web-dark .compact-status{background:#ffffff26
     }
     function selectDay(i) { selectedDay=i;expandedLesson=null;renderMainClassList();refreshComci(); }
     function changeWeek(n) { weekOffset+=n;expandedLesson=null;renderMainClassList();refreshComci(true); }
+    function toggleWeekPicker() {
+      const menu=document.getElementById('weekPicker'),button=document.getElementById('weekPickerButton');
+      const opening=menu.classList.contains('hidden');menu.classList.toggle('hidden',!opening);button.setAttribute('aria-expanded',String(opening));
+    }
+    function closeWeekPicker(){document.getElementById('weekPicker').classList.add('hidden');document.getElementById('weekPickerButton').setAttribute('aria-expanded','false');}
+    function chooseWeekRelative(delta){closeWeekPicker();changeWeek(delta);}
+    function chooseCurrentWeek(){closeWeekPicker();weekOffset=0;selectDay(Math.min(4,Math.max(0,new Date().getDay()-1)));refreshComci(true);}
+    function chooseWeekDate(value){
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return;
+      const [y,m,d]=value.split('-').map(Number),selected=new Date(Date.UTC(y,m-1,d));
+      if(selected.getUTCFullYear()!==y||selected.getUTCMonth()!==m-1||selected.getUTCDate()!==d)return;
+      const today=new Date(),current=new Date(Date.UTC(today.getFullYear(),today.getMonth(),today.getDate()));
+      selectedDay=Math.min(4,Math.max(0,(selected.getUTCDay()+6)%7));
+      selected.setUTCDate(selected.getUTCDate()-((selected.getUTCDay()+6)%7));
+      current.setUTCDate(current.getUTCDate()-((current.getUTCDay()+6)%7));
+      weekOffset=Math.round((selected-current)/604800000);closeWeekPicker();expandedLesson=null;renderMainClassList();refreshComci(true);
+    }
     function toggleLesson(key) { expandedLesson=expandedLesson===key?null:key;renderMainClassList(); }
+    function lessonFill(step) {
+      const count=getStepCount(), amount=Math.max(0, Math.min(count, normalizedStepIndex(step)+1));
+      const color=amount>=count?'#16805b':amount===2?'#147d87':'#285caa';
+      return {rest:100-(100*amount/count),color};
+    }
     function advanceLesson(cls, period) {
+      const oldState=appState.progress[cls];
+      const previous=lessonFill(oldState.currentStep), previousSession=oldState.currentSession;
       handleMainClassButtonClick(cls);
+      if (pendingTopicStart) { pendingTopicStart.period = period; return; }
       const data=appState.progress[cls];
       const record=data.sessions[data.currentSession];
       if (!record.lessonDate) {record.lessonDate=localDate(weekDates()[selectedDay]);record.lessonPeriod=period;record.lessonStart=getStartTimes()[period-1];record.lessonEnd=getAlarmTimes()[period-1];}
       record.actions=record.actions||[];
       record.actions.push({step:data.currentStep, recordedAt:new Date().toISOString(),lessonDate:localDate(weekDates()[selectedDay]),period});
       saveState();renderMainClassList();
+      const card=document.querySelector?.(`.compact-lesson[data-period="${period}"]`);
+      if(card && previousSession===data.currentSession) {
+        const next=lessonFill(data.currentStep);
+        card.classList.add('progress-reset');
+        card.style.setProperty('--progress-rest',previous.rest+'%');
+        card.style.setProperty('--progress-color',previous.color);
+        void card.offsetWidth;
+        requestAnimationFrame(()=>{card.classList.remove('progress-reset');card.style.setProperty('--progress-rest',next.rest+'%');card.style.setProperty('--progress-color',next.color);});
+      }
     }
     function renderMainClassList() {
       const container=document.getElementById('mainClassList');if(!container)return;
       const dates=weekDates(),today=localDate(new Date()),starts=getStartTimes();
       const prev=selectedDay-1,next=selectedDay+1,visible=[prev,selectedDay,next];
-      let html=`<div class="flex justify-between items-center text-sm font-bold mb-2"><button onclick="changeWeek(-1)" aria-label="이전 주" class="p-2">←</button><span>${localDate(dates[0])} ~ ${localDate(dates[4])}</span><button onclick="changeWeek(1)" aria-label="다음 주" class="p-2">→</button><button onclick="weekOffset=0;selectDay(Math.min(4,Math.max(0,new Date().getDay()-1)))" class="p-2 text-blue-700">이번 주</button></div>`;
-      html+='<div class="compact-week-grid">';
+      const weekButton=document.getElementById('weekPickerButton');
+      if(weekButton){const short=d=>`${d.getMonth()+1}/${String(d.getDate()).padStart(2,'0')}`;weekButton.textContent=`${short(dates[0])}~${short(dates[4])} ▾`;weekButton.setAttribute('aria-label',`${dates[0].getFullYear()}년 ${short(dates[0])}부터 ${short(dates[4])} 주 선택`);}
+      let html='<div class="compact-week-grid">';
       html+='<div></div>';
       visible.forEach((i,k)=>{
         if(i<0||i>4){html+='<div class="compact-day blank"></div>';return;}
         const d=dates[i],active=i===selectedDay,isToday=localDate(d)===today;
-        html+=`<button onclick="selectDay(${i})" class="compact-day ${active?'active':''}"><b>${DAYS[i]} ${d.getMonth()+1}/${d.getDate()}</b>${active&&isToday?'<small>오늘</small>':''}</button>`;
+        html+=`<button onclick="selectDay(${i})" class="compact-day ${active?'active':''}" aria-label="${DAYS[i]} ${d.getMonth()+1}월 ${d.getDate()}일${isToday?' 오늘':''}">${active?`<b>${DAYS[i]} ${d.getMonth()+1}/${d.getDate()}</b>`:`<b>${DAYS[i]}</b><small>${d.getMonth()+1}/${d.getDate()}</small>`}${isToday?'<small>오늘</small>':''}</button>`;
       });
       for(let period=1;period<=7;period++){
         
@@ -703,7 +795,7 @@ html.apk-dark .compact-status,html.web-dark .compact-status{background:#ffffff26
           if(!data){html+=`<div class="compact-side-slot">${escapeHtml(cls)}</div>`;return;}
           const no=data.currentSession||1,step=data.currentStep||'none',labels=getStepLabels();
           if(!active){html+=`<button onclick="selectDay(${i})" class="compact-side-slot step-${step}" aria-label="${day} ${period}교시 ${escapeHtml(cls)}">${escapeHtml(cls)}<span class="side-dot"></span></button>`;return;}
-          html+=`<div class="compact-lesson-wrap"><button onclick="advanceLesson('${cls}',${period})" aria-label="${escapeHtml(cls)} ${no}차시 진도 나가기" class="compact-lesson step-${step}"><div class="compact-meta-row"><span class="compact-session">${escapeHtml(cls)}</span><span class="compact-status">${no}차시-${step==='none'?'대기':escapeHtml(labels[step]||step)}</span></div><strong class="compact-topic">${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}</strong>${getComciLesson(localDate(dates[i]),period)?.changed?'<small class="lesson-change">컴시간 변경</small>':''}</button><button type="button" onclick="toggleLesson('${key}')" aria-expanded="${expandedLesson===key}" aria-label="${period}교시 상세 ${expandedLesson===key?'접기':'펼치기'}" class="compact-expand-btn"><i data-lucide="${expandedLesson===key?'chevron-up':'chevron-down'}" class="w-5 h-5"></i></button></div>`;
+          html+=`<div class="compact-lesson-wrap"><button onclick="advanceLesson('${cls}',${period})" aria-label="${escapeHtml(cls)} ${no}차시 진도 나가기" class="compact-lesson step-${step}" data-period="${period}" style="--progress-rest:${lessonFill(step).rest}%;--progress-color:${lessonFill(step).color}"><div class="compact-meta-row"><span class="compact-session">${escapeHtml(cls)}</span><span class="compact-status">${no}차시-${step==='none'?'대기':escapeHtml(labels[step]||step)}</span>${getComciLesson(localDate(dates[i]),period)?.changed?'<span class="lesson-change" aria-label="컴시간 변경">변경</span>':''}</div><strong class="compact-topic" title="${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}">${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}</strong></button><button type="button" onclick="toggleLesson('${key}')" aria-expanded="${expandedLesson===key}" aria-label="${period}교시 상세 ${expandedLesson===key?'접기':'펼치기'}" class="compact-expand-btn"><i data-lucide="${expandedLesson===key?'chevron-up':'chevron-down'}" class="w-5 h-5"></i></button></div>`;
         });
         if(expandedLesson===selectedDay+'-'+period){
           const cls=getTimetableClass(localDate(dates[selectedDay]),period),data=appState.progress[cls];
@@ -725,11 +817,39 @@ html.apk-dark .compact-status,html.web-dark .compact-status{background:#ffffff26
       else advanceClassStep(cls, steps[idx + 1]);
     }
 
+    let pendingTopicStart = null;
+    function cancelTopicStart() {
+      pendingTopicStart = null;
+      document.getElementById('topicDialog').classList.add('hidden');
+    }
+    function saveTopicAndStart() {
+      const pending = pendingTopicStart;
+      const topic = document.getElementById('topicInput').value.trim();
+      if (!pending) return;
+      if (!topic) { document.getElementById('topicError').textContent = '수업주제를 입력해주세요.'; document.getElementById('topicInput').focus(); return; }
+      const clsData = appState.progress[pending.cls];
+      if (!clsData || clsData.currentSession !== pending.session || clsData.currentStep !== 'none') { cancelTopicStart(); return; }
+      appState.sessionTopics ||= {};
+      appState.sessionTopics[pending.session] = topic;
+      cancelTopicStart();
+      if (pending.period) advanceLesson(pending.cls, pending.period);
+      else advanceClassStep(pending.cls, pending.targetStep);
+    }
+
     // 단계 전진 함수 (none -> dist -> solve -> check)
     function advanceClassStep(cls, targetStep) {
       const clsData = appState.progress[cls];
       const curSessionNo = clsData.currentSession;
       
+      if (clsData.currentStep === 'none' && targetStep !== 'none' && !String(appState.sessionTopics?.[curSessionNo] || '').trim()) {
+        pendingTopicStart = {cls, targetStep, session: curSessionNo};
+        document.getElementById('topicSession').textContent = curSessionNo + '차시';
+        document.getElementById('topicInput').value = '';
+        document.getElementById('topicError').textContent = '';
+        document.getElementById('topicDialog').classList.remove('hidden');
+        document.getElementById('topicInput').focus();
+        return;
+      }
       clsData.currentStep = targetStep;
       if (!clsData.sessions[curSessionNo]) {
         clsData.sessions[curSessionNo] = { step: 'none', date: '', memoDist: '', memoSolve: '', memoCheck: '' };
@@ -1466,7 +1586,11 @@ function renderComciStatus(){
  const c=comciConfig(),snapshot=c.weeks?.[localDate(weekDates()[0])];
  let text=appState.currentIdentity?.mode==='offline'?'오프라인 모드 · 직접 설정한 시간표':comciBusy?'시간표 업데이트 확인 중…':comciMessage||(c.enabled?(snapshot?'컴시간 시간표 연결됨':'이 주의 공개 시간표를 아직 받지 못했습니다.'):'자동 업데이트가 꺼져 있습니다.');
  if(snapshot)text+=' · 마지막 수신 '+new Date(snapshot.fetchedAt).toLocaleString('ko-KR');
- for(const id of ['comciStatus','comciMainStatus']){const el=document.getElementById(id);if(el)el.textContent=text;}
+ const detailed=document.getElementById('comciStatus');if(detailed)detailed.textContent=text;
+ const compact=document.getElementById('comciMainStatus');if(compact){
+   let short=appState.currentIdentity?.mode==='offline'?'오프라인':comciBusy?'갱신 중':!c.enabled?'자동 갱신 꺼짐':/실패|오류|끊|불가|못했|제한/.test(comciMessage)?'갱신 확인 필요':snapshot?'갱신 '+new Date(snapshot.fetchedAt).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',hour12:false}):'시간표 미수신';
+   compact.textContent=short;compact.title=text;compact.setAttribute('aria-label',text);
+ }
  const who=document.getElementById('identityCurrent');
  if(who)who.textContent=appState.currentIdentity?(appState.currentIdentity.mode==='offline'?appState.currentIdentity.schoolName+' · '+appState.teacherName+' · 오프라인':appState.currentIdentity.schoolCode+' · '+appState.currentIdentity.teacherLabel+' ('+appState.currentIdentity.teacherId+'번)'):'학교·선생님 선택 필요';
 }
@@ -1496,7 +1620,7 @@ async function refreshComci(manual=false){
   if(revision!==comciRevision||!comciConfig().enabled||appState.currentIdentity.schoolCode!==config.schoolCode||appState.currentIdentity.teacherId!==config.teacherId)return;
   mergeComciSnapshot(config,data);comciMessage='시간표 업데이트 확인 완료';
  }catch(e){if(revision===comciRevision)comciMessage='업데이트 실패: '+e.message+' · 마지막 수신 시간표를 유지합니다.';}
- finally{comciBusy=false;renderComciStatus();}
+ finally{comciBusy=false;renderComciStatus();if(revision===comciRevision&&week!==localDate(weekDates()[0]))refreshComci(true);}
 }
 document.addEventListener('DOMContentLoaded',()=>{
  renderComciSettings();
@@ -1682,8 +1806,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const key='class-progress-web-theme';
   const style=document.createElement('style');
   style.textContent=`
-    html.web-dark,html.web-dark body{background:#0f172a!important;color:#e2e8f0!important;color-scheme:dark}
-    html.web-dark .bg-white,html.web-dark .bg-slate-50,html.web-dark .bg-gray-50,html.web-dark .bg-slate-100{background-color:#1e293b!important}
+    html.web-dark,html.web-dark body{background:#000!important;color:#e2e8f0!important;color-scheme:dark}
+    html.web-dark .bg-white,html.web-dark .bg-slate-50,html.web-dark .bg-gray-50,html.web-dark .bg-slate-100{background-color:#101820!important}
     html.web-dark .text-slate-900,html.web-dark .text-slate-800,html.web-dark .text-slate-700,html.web-dark .text-gray-900,html.web-dark .text-gray-800{color:#f1f5f9!important}
     html.web-dark .text-slate-600,html.web-dark .text-slate-500,html.web-dark .text-slate-400,html.web-dark .text-gray-500{color:#cbd5e1!important}
     html.web-dark .border-slate-100,html.web-dark .border-slate-200,html.web-dark .border-gray-200{border-color:#475569!important}
@@ -1697,11 +1821,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
     #web-theme-toggle{position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:1000;border:1px solid #64748b;border-radius:999px;background:#1e293b;color:#fff;padding:10px 15px;font-weight:700;box-shadow:0 4px 12px #0004}
   `;
   document.head.appendChild(style);
-  function apply(dark){document.documentElement.classList.toggle('web-dark',dark);const b=document.getElementById('web-theme-toggle');if(b)b.textContent=dark?'☀️ 라이트 모드':'🌙 다크 모드';}
-  function init(){if(window.Capacitor?.isNativePlatform?.())return;const b=document.createElement('button');b.id='web-theme-toggle';b.type='button';b.setAttribute('aria-label','화면 테마 전환');document.body.appendChild(b);apply(localStorage.getItem(key)==='dark');b.addEventListener('click',()=>{const dark=!document.documentElement.classList.contains('web-dark');localStorage.setItem(key,dark?'dark':'light');apply(dark);});}
+  function apply(dark){document.documentElement.classList.toggle('web-dark',dark);const b=document.getElementById('themeSettingToggle');if(b){b.textContent=dark?'켜짐':'꺼짐';b.setAttribute('aria-checked',String(dark));}}
+  function init(){if(window.Capacitor?.isNativePlatform?.())return;window.toggleJindonoteTheme=()=>{const dark=!document.documentElement.classList.contains('web-dark');localStorage.setItem(key,dark?'dark':'light');apply(dark);};apply(localStorage.getItem(key)!=='light');}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
+<div id="topicDialog" class="data-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="topicTitle" aria-describedby="topicDescription"><div><form onsubmit="event.preventDefault();saveTopicAndStart()"><button type="button" class="topic-close" onclick="cancelTopicStart()" aria-label="닫기">×</button><div class="topic-icon" aria-hidden="true">📝</div><h2 id="topicTitle">수업주제를 입력해주세요.</h2><p id="topicDescription">이 차시의 수업 주제가 아직 입력되지 않았습니다.<br>수업 주제를 입력하면 진도 관리와 메모가<br>더 편리해집니다.</p><label for="topicInput" id="topicSession"></label><input id="topicInput" maxlength="200" autocomplete="off" placeholder="예) 이차함수의 그래프"><p id="topicError" role="alert"></p><div class="topic-actions"><button type="button" onclick="cancelTopicStart()">취소</button><button class="confirm" type="submit">저장하고 진도 시작</button></div></form></div></div>
 <input type="file" id="restoreFile" accept="application/json,.json" hidden onchange="previewBackupFile(this.files[0])">
 <div id="restoreConfirm" class="data-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="restoreTitle"><div><h2 id="restoreTitle">백업을 복구할까요?</h2><p id="restoreSummary"></p><p id="restoreStatus" role="status"></p><button type="button" onclick="cancelBackupRestore()">취소</button><button class="confirm" type="button" onclick="applyBackupRestore()">백업 복구</button></div></div>
 <div id="resetConfirm" class="data-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="resetTitle"><div><h2 id="resetTitle">전체 초기화</h2><p>이 기기에 저장된 모든 선생님의 진도·메모·설정을 삭제하고 처음 설정으로 돌아갑니다. 필요한 기록은 먼저 백업해 주세요.</p><label for="resetTyped">확인을 위해 ‘초기화’를 입력하세요.</label><input id="resetTyped" autocomplete="off"><p id="resetStatus" role="status"></p><button type="button" onclick="cancelFullReset()">취소</button><button class="danger" type="button" onclick="performFullReset()">전체 초기화</button></div></div></body>

@@ -1,8 +1,15 @@
 {
   "appId": "io.github.garzondesnedot.classprogress.connected",
-  "appName": "수업진도 연동",
+  "appName": "진도노트",
   "webDir": "www",
   "server": {
     "androidScheme": "https"
+  },
+  "plugins": {
+    "StatusBar": {
+      "overlaysWebView": true,
+      "style": "DARK",
+      "backgroundColor": "#000000"
+    }
   }
 }

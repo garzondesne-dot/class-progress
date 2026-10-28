@@ -19,7 +19,8 @@ const core=scripts.find(s=>s.includes('const STORAGE_KEY')),identity=scripts.fin
 assert.ok(identity);assert.ok(html.includes('screen-identitySetup'));assert.ok(!html.includes('id="screen-onboarding"'));
 const nodes=new Map(),store=new Map(),callbacks=[],notices=[];
 class Classes{constructor(){this.classes=new Set(['hidden']);}add(c){this.classes.add(c)}remove(c){this.classes.delete(c)}contains(c){return this.classes.has(c)}toggle(c,b){if(b===undefined)b=!this.contains(c);b?this.add(c):this.remove(c);}}
-const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',textContent:'',innerHTML:'',disabled:false,checked:false,setAttribute(){},click(){},classList:new Classes(),options:[],replaceChildren(...v){this.options=v;this.value=v[0]?.value||''},add(v){this.options.push(v)}});return nodes.get(id)};
+const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',textContent:'',innerHTML:'',disabled:false,checked:false,setAttribute(){},click(){},focus(){},classList:new Classes(),options:[],replaceChildren(...v){this.options=v;this.value=v[0]?.value||''},add(v){this.options.push(v)}});return nodes.get(id)};
+process.env.TZ='Asia/Seoul';
 const Clock=class extends Date{constructor(...a){super(...(a.length?a:['2026-10-27T10:50:00+09:00']))}};
 const context=vm.createContext({navigator:{onLine:true},location:{protocol:"file:"},Date:Clock,URL,AbortSignal,console,Option:class{constructor(text,value){this.text=text;this.value=value}},document:{hidden:false,addEventListener(){},getElementById:node},window:{lucide:{createIcons(){}},addEventListener:(event,fn)=>{if(event==='DOMContentLoaded')callbacks.push(fn)},scrollTo(){}},localStorage:{getItem:k=>store.get(k),setItem:(k,v)=>store.set(k,v)},lucide:{createIcons(){}},setInterval(){},setTimeout(){},clearTimeout(){},alert(){},fetch:async u=>({ok:true,json:async()=>new URL(u).pathname==='/api/school'?school:snapshot})});
 vm.runInContext(core,context);vm.runInContext(identity,context);
@@ -100,3 +101,57 @@ cancelled.length=0;scheduled.length=0;run('appState=newBlankState()');await run(
 console.log('PASS: native alarm reschedule, reserved ID isolation, offline timetable alarms, reset cancels old alarms');
 
 
+
+run("appState=buildOfflineState(appState,{name:'교사',subject:'수학',school:'',classes:'1-1'}); appState.sessionTopics={}");
+run("advanceClassStep('1-1','dist')");
+assert.equal(run("appState.progress['1-1'].currentStep"),'none');
+run("saveTopicAndStart()");assert.equal(run("appState.progress['1-1'].currentStep"),'none');
+run("cancelTopicStart()");assert.equal(run("appState.progress['1-1'].currentStep"),'none');
+run("advanceClassStep('1-1','dist')");node('topicInput').value='  집합  ';run("saveTopicAndStart()");
+assert.equal(run("appState.sessionTopics[1]"),'집합');assert.equal(run("appState.progress['1-1'].currentStep"),'dist');
+run("appState.progress['1-1'].currentStep='none';advanceClassStep('1-1','dist')");assert.equal(run("appState.progress['1-1'].currentStep"),'dist');
+console.log('PASS: topic required, empty and cancel preserve progress, save starts and existing topic starts immediately');
+// Starting from the timetable must not record a lesson until the topic is saved.
+run("appState=buildOfflineState(newBlankState(),{name:'교사',subject:'수학',school:'',classes:'1-1'});appState.sessionTopics={}");
+const beforeTopic=JSON.stringify(json('appState.progress'));
+run("advanceLesson('1-1',1)");
+assert.equal(JSON.stringify(json('appState.progress')),beforeTopic);
+run('cancelTopicStart()');assert.equal(JSON.stringify(json('appState.progress')),beforeTopic);
+run("advanceLesson('1-1',1)");node('topicInput').value='함수';run('saveTopicAndStart()');
+assert.equal(run("appState.progress['1-1'].currentStep"),'dist');
+assert.equal(run("appState.progress['1-1'].sessions[1].actions.length"),1);
+assert.equal(run("appState.progress['1-1'].sessions[1].actions[0].period"),1);
+console.log('PASS: timetable start waits for topic; cancel does not mutate; save records one action');
+// Adjacent day lessons remain visible, and today is labeled even when not selected.
+run("appState=buildOfflineState(newBlankState(),{name:'교사',subject:'수학',school:'',classes:'1-1,1-2'});appState.timetable={'월-1':'1-1','화-1':'1-2'};weekOffset=0;selectedDay=0;renderMainClassList()");
+assert.match(node('mainClassList').innerHTML,/class="compact-side-slot step-none"[^>]*>1-2/);
+assert.match(node('mainClassList').innerHTML,/(?:화 10\/27<\/b>|화<\/b><small>10\/27<\/small>)<small>오늘<\/small>/);
+run('selectedDay=1;renderMainClassList()');
+assert.match(node('mainClassList').innerHTML,/class="compact-side-slot step-none"[^>]*>1-1/);
+assert.match(node('mainClassList').innerHTML,/(?:화 10\/27<\/b>|화<\/b><small>10\/27<\/small>)<small>오늘<\/small>/);
+console.log('PASS: adjacent day lessons and today label for selected and adjacent date');
+run('appState.stepCount=3');assert.equal(run("lessonFill('dist').rest"),100-100/3);assert.equal(run("lessonFill('solve').rest"),100-200/3);assert.equal(run("lessonFill('check').rest"),0);assert.equal(run("lessonFill('check').color"),'#16805b');
+run('appState.stepCount=2');assert.equal(run("lessonFill('dist').rest"),50);assert.equal(run("lessonFill('solve').rest"),0);assert.equal(run("lessonFill('solve').color"),'#16805b');
+run('appState.stepCount=1');assert.equal(run("lessonFill('dist').rest"),0);assert.equal(run("lessonFill('dist').color"),'#16805b');
+console.log('PASS: progress fractions and completed green for one, two and three steps');
+
+// Week picker changes the selected week/day and leaves user data intact.
+run("appState=buildOfflineState(newBlankState(),{name:'교사',subject:'수학',school:'',classes:'1-1'});appState.sessionTopics[1]='집합';weekOffset=0;selectedDay=1");
+run("chooseWeekDate('2026-11-04')");assert.equal(run('weekOffset'),1);assert.equal(run('selectedDay'),2);assert.equal(run("appState.sessionTopics[1]"),'집합');
+run("chooseWeekDate('2026-02-30')");assert.equal(run('weekOffset'),1);
+run('chooseCurrentWeek()');assert.equal(run('weekOffset'),0);
+run('chooseWeekRelative(-1)');assert.equal(run('weekOffset'),-1);
+assert.ok(!html.includes('id="web-theme-toggle"'));assert.ok(html.includes('id="themeSettingToggle"'));
+console.log('PASS: week picker dates, invalid date, current/previous week, preserved topics and settings theme control');
+// Both platforms reuse their existing theme preference and operate through settings.
+function checkTheme(script,native){
+ const themeStore=new Map([[native?'class-progress-apk-theme':'class-progress-web-theme','light']]);const root=new Classes(),control={textContent:'',setAttribute(k,v){this[k]=v}};const win={Capacitor:{isNativePlatform:()=>native,Plugins:{}}};
+ const doc={readyState:'complete',documentElement:{classList:root},head:{appendChild(){}},createElement(){return {}},getElementById:id=>id==='themeSettingToggle'?control:null,addEventListener(){}};
+ const ctx=vm.createContext({window:win,document:doc,localStorage:{getItem:k=>themeStore.get(k),setItem:(k,v)=>themeStore.set(k,v)},console});
+ vm.runInContext(script,ctx);assert.equal(control.textContent,'꺼짐');assert.equal(root.contains(native?'apk-dark':'web-dark'),false);
+ win.toggleJindonoteTheme();assert.equal(control.textContent,'켜짐');assert.equal(control['aria-checked'],'true');assert.equal(themeStore.get(native?'class-progress-apk-theme':'class-progress-web-theme'),'dark');
+ win.toggleJindonoteTheme();assert.equal(control.textContent,'꺼짐');
+}
+checkTheme(scripts.find(s=>s.includes("const key='class-progress-web-theme'")),false);
+checkTheme(fs.readFileSync('apk-native-ui.js','utf8'),true);
+console.log('PASS: web and APK preserve saved theme and settings switch toggles independently');
