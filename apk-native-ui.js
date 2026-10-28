@@ -19,8 +19,8 @@
     #apk-theme-toggle{position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:1000;border:1px solid #64748b;border-radius:999px;background:#1e293b;color:#fff;padding:10px 15px;font-weight:700;box-shadow:0 4px 12px #0004}
   `;
   document.head.appendChild(css);
-  function apply(dark){document.documentElement.classList.toggle('apk-dark',dark);const b=document.getElementById('apk-theme-toggle');if(b)b.textContent=dark?'☀️ 라이트 모드':'🌙 다크 모드';statusBar(dark);}
+  function apply(dark){document.documentElement.classList.toggle('apk-dark',dark);const b=document.getElementById('themeSettingToggle');if(b){b.textContent=dark?'켜짐':'꺼짐';b.setAttribute('aria-checked',String(dark));}statusBar();}
   async function statusBar(){const bar=window.Capacitor?.Plugins?.StatusBar;if(!bar)return;try{await bar.show();await bar.setStyle({style:'DARK'});}catch(e){console.warn('Status bar setup:',e);}}
-  function init(){apply(localStorage.getItem(KEY)!=='light');const b=document.createElement('button');b.id='apk-theme-toggle';b.type='button';b.setAttribute('aria-label','화면 테마 전환');document.body.appendChild(b);apply(localStorage.getItem(KEY)!=='light');b.addEventListener('click',()=>{const dark=!document.documentElement.classList.contains('apk-dark');localStorage.setItem(KEY,dark?'dark':'light');apply(dark);});document.addEventListener('resume',()=>statusBar());document.addEventListener('visibilitychange',()=>{if(!document.hidden)statusBar();});}
+  function init(){window.toggleJindonoteTheme=()=>{const dark=!document.documentElement.classList.contains('apk-dark');localStorage.setItem(KEY,dark?'dark':'light');apply(dark);};apply(localStorage.getItem(KEY)!=='light');document.addEventListener('resume',()=>statusBar());document.addEventListener('visibilitychange',()=>{if(!document.hidden)statusBar();});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
