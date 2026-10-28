@@ -111,7 +111,6 @@ html:is(.web-dark,.apk-dark) .data-dialog{background:#000b!important}
 html:is(.web-dark,.apk-dark) .data-dialog button:not(.confirm):not(.danger){background:#334155;color:#fff}
 </style><link rel="icon" type="image/svg+xml" href="assets/jindonote-icon.svg"><meta name="theme-color" content="#000000">
 <style id="jindonote-reference-design">
-.compact-lesson-wrap,.active-empty{grid-column:2/-1}.compact-lesson-wrap .compact-lesson{display:flex;flex-direction:row;align-items:center;gap:10px;min-height:53px;padding:4px 48px 4px 4px!important}.class-chip{align-self:stretch;min-width:42px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1px solid #536779;border-radius:9px;font-size:13px;font-weight:800}.lesson-copy{display:flex;flex-direction:column;min-width:0;gap:3px}.compact-topic{font-size:15px!important;line-height:1.25}.compact-status{font-size:10px!important}.compact-expand-btn{background:transparent!important;color:inherit!important}.active-empty{justify-content:flex-start;padding-left:16px}
 .app-brand{font-size:18px;font-weight:900;letter-spacing:-.03em}.header-identity{display:none}
 #topicDialog>div{position:relative;border:1px solid #475569;border-radius:20px;padding:22px 16px 16px;text-align:center;max-width:360px}
 #topicDialog .topic-close{position:absolute;right:10px;top:8px;font-size:25px;line-height:1;background:transparent!important;color:inherit;padding:4px 10px}
@@ -728,20 +727,20 @@ html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions .confirm{backgroun
       visible.forEach((i,k)=>{
         if(i<0||i>4){html+='<div class="compact-day blank"></div>';return;}
         const d=dates[i],active=i===selectedDay,isToday=localDate(d)===today;
-        html+=`<button onclick="selectDay(${i})" class="compact-day ${active?'active':''}"><b>${DAYS[i]} ${d.getMonth()+1}/${d.getDate()}</b>${active&&isToday?'<small>오늘</small>':''}</button>`;
+        html+=`<button onclick="selectDay(${i})" class="compact-day ${active?'active':''}"><b>${DAYS[i]} ${d.getMonth()+1}/${d.getDate()}</b>${isToday?'<small>오늘</small>':''}</button>`;
       });
       for(let period=1;period<=7;period++){
         
         html+=`<div class="period-label"><strong>${period}교시</strong><small>${starts[period-1]}</small></div>`;
         visible.forEach((i,k)=>{
-          if(i!==selectedDay || i<0 || i>4)return;
+          if(i<0||i>4){html+='<div class="compact-side-slot"></div>';return;}
           const day=DAYS[i],cls=getTimetableClass(localDate(dates[i]),period),key=i+'-'+period,active=i===selectedDay;
-          if(!cls){html+='<div class="compact-empty active-empty">'+(appState.currentIdentity&&appState.currentIdentity.mode!=='offline'&&!getComciLesson(localDate(dates[i]),period)?'시간표 미수신':'수업 없음')+'</div>';return;}
+          if(!cls){html+=active?'<div class="compact-empty">'+(appState.currentIdentity&&appState.currentIdentity.mode!=='offline'&&!getComciLesson(localDate(dates[i]),period)?'시간표 미수신':'수업 없음')+'</div>':'<div class="compact-side-slot"></div>';return;}
           const data=appState.progress[cls];
-          if(!data){html+=`<div class="compact-empty active-empty">${escapeHtml(cls)}</div>`;return;}
+          if(!data){html+=`<div class="compact-side-slot">${escapeHtml(cls)}</div>`;return;}
           const no=data.currentSession||1,step=data.currentStep||'none',labels=getStepLabels();
           if(!active){html+=`<button onclick="selectDay(${i})" class="compact-side-slot step-${step}" aria-label="${day} ${period}교시 ${escapeHtml(cls)}">${escapeHtml(cls)}<span class="side-dot"></span></button>`;return;}
-          html+=`<div class="compact-lesson-wrap"><button onclick="advanceLesson('${cls}',${period})" aria-label="${escapeHtml(cls)} ${no}차시 진도 나가기" class="compact-lesson step-${step}"><span class="class-chip">${escapeHtml(cls)}<span class="side-dot"></span></span><span class="lesson-copy"><span class="compact-status">${no}차시 · ${step==='none'?'대기':escapeHtml(labels[step]||step)}</span><strong class="compact-topic">${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}</strong></span>${getComciLesson(localDate(dates[i]),period)?.changed?'<small class="lesson-change">컴시간 변경</small>':''}</button><button type="button" onclick="toggleLesson('${key}')" aria-expanded="${expandedLesson===key}" aria-label="${period}교시 상세 ${expandedLesson===key?'접기':'펼치기'}" class="compact-expand-btn"><i data-lucide="${expandedLesson===key?'chevron-up':'chevron-down'}" class="w-5 h-5"></i></button></div>`;
+          html+=`<div class="compact-lesson-wrap"><button onclick="advanceLesson('${cls}',${period})" aria-label="${escapeHtml(cls)} ${no}차시 진도 나가기" class="compact-lesson step-${step}"><div class="compact-meta-row"><span class="compact-session">${escapeHtml(cls)}</span><span class="compact-status">${no}차시-${step==='none'?'대기':escapeHtml(labels[step]||step)}</span></div><strong class="compact-topic">${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}</strong>${getComciLesson(localDate(dates[i]),period)?.changed?'<small class="lesson-change">컴시간 변경</small>':''}</button><button type="button" onclick="toggleLesson('${key}')" aria-expanded="${expandedLesson===key}" aria-label="${period}교시 상세 ${expandedLesson===key?'접기':'펼치기'}" class="compact-expand-btn"><i data-lucide="${expandedLesson===key?'chevron-up':'chevron-down'}" class="w-5 h-5"></i></button></div>`;
         });
         if(expandedLesson===selectedDay+'-'+period){
           const cls=getTimetableClass(localDate(dates[selectedDay]),period),data=appState.progress[cls];
