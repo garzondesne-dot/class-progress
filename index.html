@@ -109,7 +109,32 @@ html:is(.web-dark,.apk-dark) :is(.compact-topic,.compact-session,.compact-chevro
 html:is(.web-dark,.apk-dark) :is(header,.bg-white\/95){background:#101820!important}
 html:is(.web-dark,.apk-dark) .data-dialog{background:#000b!important}
 html:is(.web-dark,.apk-dark) .data-dialog button:not(.confirm):not(.danger){background:#334155;color:#fff}
-</style><link rel="icon" type="image/svg+xml" href="assets/jindonote-icon.svg"><meta name="theme-color" content="#000000"></head>
+</style><link rel="icon" type="image/svg+xml" href="assets/jindonote-icon.svg"><meta name="theme-color" content="#000000">
+<style id="jindonote-reference-design">
+.app-brand{font-size:18px;font-weight:900;letter-spacing:-.03em}.header-identity{display:none}
+#topicDialog>div{position:relative;border:1px solid #475569;border-radius:20px;padding:22px 16px 16px;text-align:center;max-width:360px}
+#topicDialog .topic-close{position:absolute;right:10px;top:8px;font-size:25px;line-height:1;background:transparent!important;color:inherit;padding:4px 10px}
+#topicDialog .topic-icon{display:grid;place-items:center;width:68px;height:68px;margin:2px auto 18px;border-radius:50%;background:#314d87;font-size:34px}
+#topicDialog h2{font-size:19px;margin:0 0 12px}#topicDialog p{font-weight:400;margin:7px 0;line-height:1.55}#topicDialog label{display:block;text-align:left;font-size:12px}#topicDialog input{text-align:left;margin:8px 0 0}#topicDialog #topicError{color:#f87171;font-size:12px;text-align:left;min-height:1em;margin:2px 0}
+#topicDialog .topic-actions{display:grid;grid-template-columns:1fr 1.3fr;gap:8px}#topicDialog .topic-actions button{margin:0;min-height:48px;font-weight:800}#topicDialog .confirm{background:#0757ef;color:white}
+html:is(.web-dark,.apk-dark) body{background:#000!important;color:#edf4ff!important}
+html:is(.web-dark,.apk-dark) body>div:not(.data-dialog){background:#000!important;color:#edf4ff!important}
+html:is(.web-dark,.apk-dark) body header{background:#000!important;border-color:#263546!important}
+html:is(.web-dark,.apk-dark) body :is(#settingsModal,#timetableModal,#memoSplitModal){background:#000b!important}
+html:is(.web-dark,.apk-dark) body :is(#settingsModal,#timetableModal,#memoSplitModal)>div{background:#000!important;color:#edf4ff!important;border-color:#35475a!important}
+html:is(.web-dark,.apk-dark) body :is(#settingsModal,#timetableModal,#memoSplitModal) :is(.bg-white,.bg-slate-50,.bg-indigo-50,.bg-emerald-50,.bg-blue-50,.bg-rose-50,.bg-amber-50\/50,.settings-identity){background:#07131f!important;color:#e6edf7!important;border-color:#34495b!important}
+html:is(.web-dark,.apk-dark) body :is(#settingsModal,#timetableModal,#memoSplitModal) :is(.text-slate-900,.text-slate-800,.text-slate-700,.text-blue-900,.text-indigo-900,.text-emerald-900,.text-emerald-950,.text-rose-800){color:#f1f5f9!important}
+html:is(.web-dark,.apk-dark) body :is(#settingsModal,#timetableModal,#memoSplitModal) :is(.text-slate-500,.text-slate-600){color:#b4c2d0!important}
+html:is(.web-dark,.apk-dark) body :is(input:not([type=checkbox]),textarea,select){background:#102130!important;color:#fff!important;border-color:#526779!important}
+html:is(.web-dark,.apk-dark) body :is(.compact-side-slot,.compact-empty,.compact-lesson,.compact-day:not(.active):not(.blank),.compact-expand-btn,.lesson-detail){background:#101c27!important;color:#f8fafc!important;border-color:#354858!important}
+html:is(.web-dark,.apk-dark) body .compact-day.active{background:#0757ef!important;color:#fff!important}
+html:is(.web-dark,.apk-dark) body .compact-day.blank{background:transparent!important}
+html:is(.web-dark,.apk-dark) body :is(.compact-topic,.compact-session,.compact-status,.compact-chevron){color:#f1f5f9!important}
+html:is(.web-dark,.apk-dark) body .data-dialog>div{background:#0b1a27!important;color:#fff!important;border-color:#526779!important}
+html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions button:not(.confirm){background:#203447!important;color:#fff!important}
+html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions .confirm{background:#0757ef!important;color:#fff!important}
+</style>
+</head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex justify-center selection:bg-indigo-100">
 
   <!-- ================= 모바일 프레임 컨테이너 ================= -->
@@ -119,10 +144,9 @@ html:is(.web-dark,.apk-dark) .data-dialog button:not(.confirm):not(.danger){back
     <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 px-3.5 py-2.5 flex items-center justify-between shadow-xs">
       <!-- 과목 및 교사 정보 -->
       <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-xs">
-          <i data-lucide="check-check" class="w-4 h-4"></i>
-        </div>
-        <div class="leading-tight">
+        <img src="assets/jindonote-icon.svg" class="w-8 h-8 rounded-xl" alt="">
+        <span class="app-brand">진도노트</span>
+        <div class="leading-tight header-identity">
           <div class="flex items-center gap-1.5">
             <span id="headerSubject" class="font-black text-slate-900 text-sm">과목명</span>
             <span id="headerSemester" class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-brand-700 border border-indigo-100">1학기</span>
@@ -685,6 +709,7 @@ html:is(.web-dark,.apk-dark) .data-dialog button:not(.confirm):not(.danger){back
     function toggleLesson(key) { expandedLesson=expandedLesson===key?null:key;renderMainClassList(); }
     function advanceLesson(cls, period) {
       handleMainClassButtonClick(cls);
+      if (pendingTopicStart) { pendingTopicStart.period = period; return; }
       const data=appState.progress[cls];
       const record=data.sessions[data.currentSession];
       if (!record.lessonDate) {record.lessonDate=localDate(weekDates()[selectedDay]);record.lessonPeriod=period;record.lessonStart=getStartTimes()[period-1];record.lessonEnd=getAlarmTimes()[period-1];}
@@ -752,7 +777,8 @@ html:is(.web-dark,.apk-dark) .data-dialog button:not(.confirm):not(.danger){back
       appState.sessionTopics ||= {};
       appState.sessionTopics[pending.session] = topic;
       cancelTopicStart();
-      advanceClassStep(pending.cls, pending.targetStep);
+      if (pending.period) advanceLesson(pending.cls, pending.period);
+      else advanceClassStep(pending.cls, pending.targetStep);
     }
 
     // 단계 전진 함수 (none -> dist -> solve -> check)
@@ -1737,11 +1763,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
   `;
   document.head.appendChild(style);
   function apply(dark){document.documentElement.classList.toggle('web-dark',dark);const b=document.getElementById('web-theme-toggle');if(b)b.textContent=dark?'☀️ 라이트 모드':'🌙 다크 모드';}
-  function init(){if(window.Capacitor?.isNativePlatform?.())return;const b=document.createElement('button');b.id='web-theme-toggle';b.type='button';b.setAttribute('aria-label','화면 테마 전환');document.body.appendChild(b);apply(localStorage.getItem(key)==='dark');b.addEventListener('click',()=>{const dark=!document.documentElement.classList.contains('web-dark');localStorage.setItem(key,dark?'dark':'light');apply(dark);});}
+  function init(){if(window.Capacitor?.isNativePlatform?.())return;const b=document.createElement('button');b.id='web-theme-toggle';b.type='button';b.setAttribute('aria-label','화면 테마 전환');document.body.appendChild(b);apply(localStorage.getItem(key)!=='light');b.addEventListener('click',()=>{const dark=!document.documentElement.classList.contains('web-dark');localStorage.setItem(key,dark?'dark':'light');apply(dark);});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-<div id="topicDialog" class="data-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="topicTitle"><div><form onsubmit="event.preventDefault();saveTopicAndStart()"><h2 id="topicTitle">수업주제를 입력해주세요.</h2><label for="topicInput" id="topicSession"></label><input id="topicInput" maxlength="200" autocomplete="off" placeholder="예: 선분의 내분"><p id="topicError" role="alert"></p><button type="button" onclick="cancelTopicStart()">취소</button><button class="confirm" type="submit">저장하고 진도 시작</button></form></div></div>
+<div id="topicDialog" class="data-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="topicTitle" aria-describedby="topicDescription"><div><form onsubmit="event.preventDefault();saveTopicAndStart()"><button type="button" class="topic-close" onclick="cancelTopicStart()" aria-label="닫기">×</button><div class="topic-icon" aria-hidden="true">📝</div><h2 id="topicTitle">수업주제를 입력해주세요.</h2><p id="topicDescription">이 차시의 수업 주제가 아직 입력되지 않았습니다.<br>수업 주제를 입력하면 진도 관리와 메모가<br>더 편리해집니다.</p><label for="topicInput" id="topicSession"></label><input id="topicInput" maxlength="200" autocomplete="off" placeholder="예) 이차함수의 그래프"><p id="topicError" role="alert"></p><div class="topic-actions"><button type="button" onclick="cancelTopicStart()">취소</button><button class="confirm" type="submit">저장하고 진도 시작</button></div></form></div></div>
 <input type="file" id="restoreFile" accept="application/json,.json" hidden onchange="previewBackupFile(this.files[0])">
 <div id="restoreConfirm" class="data-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="restoreTitle"><div><h2 id="restoreTitle">백업을 복구할까요?</h2><p id="restoreSummary"></p><p id="restoreStatus" role="status"></p><button type="button" onclick="cancelBackupRestore()">취소</button><button class="confirm" type="button" onclick="applyBackupRestore()">백업 복구</button></div></div>
 <div id="resetConfirm" class="data-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="resetTitle"><div><h2 id="resetTitle">전체 초기화</h2><p>이 기기에 저장된 모든 선생님의 진도·메모·설정을 삭제하고 처음 설정으로 돌아갑니다. 필요한 기록은 먼저 백업해 주세요.</p><label for="resetTyped">확인을 위해 ‘초기화’를 입력하세요.</label><input id="resetTyped" autocomplete="off"><p id="resetStatus" role="status"></p><button type="button" onclick="cancelFullReset()">취소</button><button class="danger" type="button" onclick="performFullReset()">전체 초기화</button></div></div></body>
