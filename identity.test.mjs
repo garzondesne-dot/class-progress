@@ -130,10 +130,10 @@ run('selectedDay=1;renderMainClassList()');
 assert.match(node('mainClassList').innerHTML,/class="compact-side-slot step-none"[^>]*>1-1/);
 assert.match(node('mainClassList').innerHTML,/(?:화 10\/27<\/b>|화<\/b><small>10\/27<\/small>)<small>오늘<\/small>/);
 console.log('PASS: adjacent day lessons and today label for selected and adjacent date');
-run('appState.stepCount=3');assert.equal(run("lessonFill('dist').rest"),100-100/3);assert.equal(run("lessonFill('solve').rest"),100-200/3);assert.equal(run("lessonFill('check').rest"),0);assert.equal(run("lessonFill('check').color"),'#16805b');
-run('appState.stepCount=2');assert.equal(run("lessonFill('dist').rest"),50);assert.equal(run("lessonFill('solve').rest"),0);assert.equal(run("lessonFill('solve').color"),'#16805b');
-run('appState.stepCount=1');assert.equal(run("lessonFill('dist').rest"),0);assert.equal(run("lessonFill('dist').color"),'#16805b');
-console.log('PASS: progress fractions and completed green for one, two and three steps');
+run('appState.stepCount=3');assert.equal(run("lessonFill('dist',1).rest"),100-100/3);assert.equal(run("lessonFill('solve',1).rest"),100-200/3);assert.equal(run("lessonFill('check',1).rest"),0);
+run('appState.stepCount=2');assert.equal(run("lessonFill('dist',1).rest"),50);assert.equal(run("lessonFill('solve',1).rest"),0);
+run('appState.stepCount=1');assert.equal(run("lessonFill('dist',1).rest"),0);
+console.log('PASS: progress fractions for one, two and three steps');
 
 // Week picker changes the selected week/day and leaves user data intact.
 run("appState=buildOfflineState(newBlankState(),{name:'교사',subject:'수학',school:'',classes:'1-1'});appState.sessionTopics[1]='집합';weekOffset=0;selectedDay=1");
@@ -156,6 +156,14 @@ checkTheme(scripts.find(s=>s.includes("const key='class-progress-web-theme'")),f
 checkTheme(fs.readFileSync('apk-native-ui.js','utf8'),true);
 console.log('PASS: web and APK preserve saved theme and settings switch toggles independently');
 
-run('appState.stepCount=3');assert.equal(run("lessonFill('dist').light"),'#ffbd85');assert.equal(run("lessonFill('solve').light"),'#f7dd65');assert.equal(run("lessonFill('check').light"),'#8ed6a5');assert.equal(run("lessonFill('dist').color"),'#a64b1c');assert.equal(run("lessonFill('solve').color"),'#80620e');
+run('appState.stepCount=3');
+const expectedColors=['#ef7773','#f5a15f','#edcc63','#aed774','#79c9a0','#67c4c7','#76b9e6','#819be8','#b293dc','#df92bd'];
+for(let i=1;i<=30;i++){
+ const expected=expectedColors[(i-1)%10];
+ assert.equal(run(`lessonFill('dist',${i}).light`),expected);
+ assert.equal(run(`lessonFill('solve',${i}).light`),expected);
+ assert.equal(run(`lessonFill('check',${i}).light`),expected);
+ assert.equal(run(`lessonFill('dist',${i}).color`),run(`lessonFill('check',${i}).color`));
+}
 assert.match(html,/compact-expand-btn,html:is\(\.web-dark,\.apk-dark\) body \.compact-expand-btn\{background:transparent!important/);
-console.log('PASS: orange yellow green palette, light/dark fill and transparent expand control');
+console.log('PASS: ten session colors repeat and remain stable across all steps');
