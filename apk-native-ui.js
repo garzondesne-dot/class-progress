@@ -20,7 +20,7 @@
   `;
   document.head.appendChild(css);
   function apply(dark){document.documentElement.classList.toggle('apk-dark',dark);const b=document.getElementById('apk-theme-toggle');if(b)b.textContent=dark?'☀️ 라이트 모드':'🌙 다크 모드';}
-  async function statusBar(){const bar=window.Capacitor?.Plugins?.StatusBar;if(!bar)return;try{await bar.setOverlaysWebView({overlay:false});await bar.setBackgroundColor({color:'#000000'});await bar.setStyle({style:'LIGHT'});}catch(e){console.warn('Status bar setup:',e);}}
+  async function statusBar(){const bar=window.Capacitor?.Plugins?.StatusBar;if(!bar)return;try{await bar.setOverlaysWebView({overlay:false});await bar.setBackgroundColor({color:'#000000'});await bar.setStyle({style:'DARK'});}catch(e){console.warn('Status bar setup:',e);}}
   function init(){apply(localStorage.getItem(KEY)==='dark');const b=document.createElement('button');b.id='apk-theme-toggle';b.type='button';b.setAttribute('aria-label','화면 테마 전환');document.body.appendChild(b);apply(localStorage.getItem(KEY)==='dark');b.addEventListener('click',()=>{const dark=!document.documentElement.classList.contains('apk-dark');localStorage.setItem(KEY,dark?'dark':'light');apply(dark);});statusBar();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
