@@ -109,6 +109,17 @@ html:is(.web-dark,.apk-dark) :is(.compact-topic,.compact-session,.compact-chevro
 html:is(.web-dark,.apk-dark) :is(header,.bg-white\/95){background:#101820!important}
 html:is(.web-dark,.apk-dark) .data-dialog{background:#000b!important}
 html:is(.web-dark,.apk-dark) .data-dialog button:not(.confirm):not(.danger){background:#334155;color:#fff}
+
+/* A consistent compact row, with progress visible in both themes. */
+.compact-week-grid .period-label,.compact-side-slot,.compact-empty,.compact-lesson-wrap,.compact-lesson{height:49px!important;min-height:49px!important;max-height:49px!important}
+.compact-lesson{isolation:isolate;overflow:hidden;padding-top:3px!important;padding-bottom:3px!important}
+.compact-lesson::before{content:"";position:absolute;inset:0;background:var(--progress-color,#285caa);clip-path:inset(0 var(--progress-rest,100%) 0 0);z-index:-1;transition:clip-path .65s ease-in-out,background-color .65s ease-in-out}
+html body .compact-lesson:is(.step-none,.step-dist,.step-solve,.step-check){background:#f1f5f9!important;color:#102235!important}
+html:is(.web-dark,.apk-dark) body .compact-lesson:is(.step-none,.step-dist,.step-solve,.step-check){background:#101c27!important;color:#f8fafc!important}
+.compact-lesson.progress-reset::before{transition:none!important}
+html body .compact-lesson:is(.step-dist,.step-solve,.step-check) .compact-topic,html body .compact-lesson:is(.step-dist,.step-solve,.step-check) .compact-session{color:#fff!important}
+.compact-lesson .compact-topic{font-size:16px!important;line-height:1.1}.compact-lesson .compact-session{font-size:12px!important}.compact-lesson .compact-status{font-size:10px!important;padding:1px 5px}.compact-lesson .lesson-change{font-size:9px;line-height:1}
+@media (prefers-reduced-motion:reduce){.compact-lesson::before{transition:none}}
 </style><link rel="icon" type="image/svg+xml" href="assets/jindonote-icon.svg"><meta name="theme-color" content="#000000">
 <style id="jindonote-reference-design">
 .app-brand{font-size:18px;font-weight:900;letter-spacing:-.03em}.header-identity{display:none}
@@ -707,7 +718,14 @@ html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions .confirm{backgroun
     function selectDay(i) { selectedDay=i;expandedLesson=null;renderMainClassList();refreshComci(); }
     function changeWeek(n) { weekOffset+=n;expandedLesson=null;renderMainClassList();refreshComci(true); }
     function toggleLesson(key) { expandedLesson=expandedLesson===key?null:key;renderMainClassList(); }
+    function lessonFill(step) {
+      const count=getStepCount(), amount=Math.max(0, Math.min(count, normalizedStepIndex(step)+1));
+      const color=amount>=count?'#16805b':amount===2?'#147d87':'#285caa';
+      return {rest:100-(100*amount/count),color};
+    }
     function advanceLesson(cls, period) {
+      const oldState=appState.progress[cls];
+      const previous=lessonFill(oldState.currentStep), previousSession=oldState.currentSession;
       handleMainClassButtonClick(cls);
       if (pendingTopicStart) { pendingTopicStart.period = period; return; }
       const data=appState.progress[cls];
@@ -716,6 +734,15 @@ html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions .confirm{backgroun
       record.actions=record.actions||[];
       record.actions.push({step:data.currentStep, recordedAt:new Date().toISOString(),lessonDate:localDate(weekDates()[selectedDay]),period});
       saveState();renderMainClassList();
+      const card=document.querySelector?.(`.compact-lesson[data-period="${period}"]`);
+      if(card && previousSession===data.currentSession) {
+        const next=lessonFill(data.currentStep);
+        card.classList.add('progress-reset');
+        card.style.setProperty('--progress-rest',previous.rest+'%');
+        card.style.setProperty('--progress-color',previous.color);
+        void card.offsetWidth;
+        requestAnimationFrame(()=>{card.classList.remove('progress-reset');card.style.setProperty('--progress-rest',next.rest+'%');card.style.setProperty('--progress-color',next.color);});
+      }
     }
     function renderMainClassList() {
       const container=document.getElementById('mainClassList');if(!container)return;
@@ -740,7 +767,7 @@ html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions .confirm{backgroun
           if(!data){html+=`<div class="compact-side-slot">${escapeHtml(cls)}</div>`;return;}
           const no=data.currentSession||1,step=data.currentStep||'none',labels=getStepLabels();
           if(!active){html+=`<button onclick="selectDay(${i})" class="compact-side-slot step-${step}" aria-label="${day} ${period}교시 ${escapeHtml(cls)}">${escapeHtml(cls)}<span class="side-dot"></span></button>`;return;}
-          html+=`<div class="compact-lesson-wrap"><button onclick="advanceLesson('${cls}',${period})" aria-label="${escapeHtml(cls)} ${no}차시 진도 나가기" class="compact-lesson step-${step}"><div class="compact-meta-row"><span class="compact-session">${escapeHtml(cls)}</span><span class="compact-status">${no}차시-${step==='none'?'대기':escapeHtml(labels[step]||step)}</span></div><strong class="compact-topic">${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}</strong>${getComciLesson(localDate(dates[i]),period)?.changed?'<small class="lesson-change">컴시간 변경</small>':''}</button><button type="button" onclick="toggleLesson('${key}')" aria-expanded="${expandedLesson===key}" aria-label="${period}교시 상세 ${expandedLesson===key?'접기':'펼치기'}" class="compact-expand-btn"><i data-lucide="${expandedLesson===key?'chevron-up':'chevron-down'}" class="w-5 h-5"></i></button></div>`;
+          html+=`<div class="compact-lesson-wrap"><button onclick="advanceLesson('${cls}',${period})" aria-label="${escapeHtml(cls)} ${no}차시 진도 나가기" class="compact-lesson step-${step}" data-period="${period}" style="--progress-rest:${lessonFill(step).rest}%;--progress-color:${lessonFill(step).color}"><div class="compact-meta-row"><span class="compact-session">${escapeHtml(cls)}</span><span class="compact-status">${no}차시-${step==='none'?'대기':escapeHtml(labels[step]||step)}</span></div><strong class="compact-topic">${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}</strong>${getComciLesson(localDate(dates[i]),period)?.changed?'<small class="lesson-change">컴시간 변경</small>':''}</button><button type="button" onclick="toggleLesson('${key}')" aria-expanded="${expandedLesson===key}" aria-label="${period}교시 상세 ${expandedLesson===key?'접기':'펼치기'}" class="compact-expand-btn"><i data-lucide="${expandedLesson===key?'chevron-up':'chevron-down'}" class="w-5 h-5"></i></button></div>`;
         });
         if(expandedLesson===selectedDay+'-'+period){
           const cls=getTimetableClass(localDate(dates[selectedDay]),period),data=appState.progress[cls];
