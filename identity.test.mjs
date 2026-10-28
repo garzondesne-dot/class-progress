@@ -20,6 +20,7 @@ assert.ok(identity);assert.ok(html.includes('screen-identitySetup'));assert.ok(!
 const nodes=new Map(),store=new Map(),callbacks=[],notices=[];
 class Classes{constructor(){this.classes=new Set(['hidden']);}add(c){this.classes.add(c)}remove(c){this.classes.delete(c)}contains(c){return this.classes.has(c)}toggle(c,b){if(b===undefined)b=!this.contains(c);b?this.add(c):this.remove(c);}}
 const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',textContent:'',innerHTML:'',disabled:false,checked:false,setAttribute(){},click(){},focus(){},classList:new Classes(),options:[],replaceChildren(...v){this.options=v;this.value=v[0]?.value||''},add(v){this.options.push(v)}});return nodes.get(id)};
+process.env.TZ='Asia/Seoul';
 const Clock=class extends Date{constructor(...a){super(...(a.length?a:['2026-10-27T10:50:00+09:00']))}};
 const context=vm.createContext({navigator:{onLine:true},location:{protocol:"file:"},Date:Clock,URL,AbortSignal,console,Option:class{constructor(text,value){this.text=text;this.value=value}},document:{hidden:false,addEventListener(){},getElementById:node},window:{lucide:{createIcons(){}},addEventListener:(event,fn)=>{if(event==='DOMContentLoaded')callbacks.push(fn)},scrollTo(){}},localStorage:{getItem:k=>store.get(k),setItem:(k,v)=>store.set(k,v)},lucide:{createIcons(){}},setInterval(){},setTimeout(){},clearTimeout(){},alert(){},fetch:async u=>({ok:true,json:async()=>new URL(u).pathname==='/api/school'?school:snapshot})});
 vm.runInContext(core,context);vm.runInContext(identity,context);
@@ -121,3 +122,11 @@ assert.equal(run("appState.progress['1-1'].currentStep"),'dist');
 assert.equal(run("appState.progress['1-1'].sessions[1].actions.length"),1);
 assert.equal(run("appState.progress['1-1'].sessions[1].actions[0].period"),1);
 console.log('PASS: timetable start waits for topic; cancel does not mutate; save records one action');
+// Adjacent day lessons remain visible, and today is labeled even when not selected.
+run("appState=buildOfflineState(newBlankState(),{name:'교사',subject:'수학',school:'',classes:'1-1,1-2'});appState.timetable={'월-1':'1-1','화-1':'1-2'};weekOffset=0;selectedDay=0;renderMainClassList()");
+assert.match(node('mainClassList').innerHTML,/class="compact-side-slot step-none"[^>]*>1-2/);
+assert.match(node('mainClassList').innerHTML,/화 10\/27<\/b><small>오늘<\/small>/);
+run('selectedDay=1;renderMainClassList()');
+assert.match(node('mainClassList').innerHTML,/class="compact-side-slot step-none"[^>]*>1-1/);
+assert.match(node('mainClassList').innerHTML,/화 10\/27<\/b><small>오늘<\/small>/);
+console.log('PASS: adjacent day lessons and today label for selected and adjacent date');
