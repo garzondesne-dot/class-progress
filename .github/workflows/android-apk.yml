@@ -9,6 +9,8 @@ on:
       - 'package.json'
       - 'capacitor.config.json'
       - '.github/workflows/android-apk.yml'
+      - 'android-template/**'
+      - 'assets/**'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -62,11 +64,15 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+      - name: Apply native system bar layout
+        run: cp android-template/MainActivity.java android/app/src/main/java/io/github/garzondesnedot/classprogress/connected/MainActivity.java
       - name: Generate launcher icons
         run: |
           python -m pip install cairosvg
           python - <<'PYICON'
-          import cairosvg, os
+          import cairosvg, os, shutil
+          # Remove generated adaptive icon XML, which otherwise overrides the PNGs.
+          shutil.rmtree('android/app/src/main/res/mipmap-anydpi-v26', ignore_errors=True)
           for folder,size in {'mipmap-mdpi':48,'mipmap-hdpi':72,'mipmap-xhdpi':96,'mipmap-xxhdpi':144,'mipmap-xxxhdpi':192}.items():
               path='android/app/src/main/res/'+folder
               os.makedirs(path,exist_ok=True)
