@@ -155,3 +155,7 @@ function checkTheme(script,native){
 checkTheme(scripts.find(s=>s.includes("const key='class-progress-web-theme'")),false);
 checkTheme(fs.readFileSync('apk-native-ui.js','utf8'),true);
 console.log('PASS: web and APK preserve saved theme and settings switch toggles independently');
+
+run('appState.stepCount=3');assert.equal(run("lessonFill('dist').light"),'#ffbd85');assert.equal(run("lessonFill('solve').light"),'#f7dd65');assert.equal(run("lessonFill('check').light"),'#8ed6a5');assert.equal(run("lessonFill('dist').color"),'#a64b1c');assert.equal(run("lessonFill('solve').color"),'#80620e');
+assert.match(html,/compact-expand-btn,html:is\(\.web-dark,\.apk-dark\) body \.compact-expand-btn\{background:transparent!important/);
+console.log('PASS: orange yellow green palette, light/dark fill and transparent expand control');
