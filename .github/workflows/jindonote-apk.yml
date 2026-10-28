@@ -1,0 +1,47 @@
+name: Build Jindonote Android APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, feature/jindonote-dark-topic]
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Install and prepare web
+        run: |
+          npm ci
+          mkdir -p www/assets
+          cp index.html www/index.html
+          cp assets/jindonote-icon.svg www/assets/jindonote-icon.svg
+          cp apk-native-ui.js www/apk-native-ui.js
+          sed -i 's#</body>#<script src="apk-native-ui.js"></script></body>#' www/index.html
+      - name: Generate launcher icons
+        run: |
+          python -m pip install cairosvg
+          python - <<'PY'
+          import cairosvg,os
+          sizes={'mipmap-mdpi':48,'mipmap-hdpi':72,'mipmap-xhdpi':96,'mipmap-xxhdpi':144,'mipmap-xxxhdpi':192}
+          for folder,size in sizes.items():
+              path='android/app/src/main/res/'+folder
+              os.makedirs(path,exist_ok=True)
+              for filename in ('ic_launcher.png','ic_launcher_round.png'):
+                  cairosvg.svg2png(url='assets/jindonote-icon.svg',write_to=path+'/'+filename,output_width=size,output_height=size)
+          PY
+      - name: Sync Android
+        run: npx cap sync android
+      - name: Build debug APK
+        run: cd android && chmod +x gradlew && ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jindonote-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
