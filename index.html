@@ -169,6 +169,16 @@ html:is(.web-dark,.apk-dark) body .data-dialog>div{background:#0b1a27!important;
 html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions button:not(.confirm){background:#203447!important;color:#fff!important}
 html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions .confirm{background:#0757ef!important;color:#fff!important}
 </style>
+<style id="responsive-timetable">
+html body .compact-week-grid :is(.compact-side-slot,.compact-empty,.compact-lesson-wrap,.compact-lesson,.period-label){height:var(--test-row-height,49px)!important;min-height:var(--test-row-height,49px)!important;max-height:var(--test-row-height,49px)!important}
+html body .compact-week-grid .compact-session{font-size:clamp(12px,calc(var(--test-row-height,49px) * .25),17px)!important}
+html body .compact-week-grid .compact-status{font-size:clamp(11px,calc(var(--test-row-height,49px) * .21),14px)!important}
+html body .compact-week-grid .compact-topic{font-size:clamp(15px,calc(var(--test-row-height,49px) * .31),21px)!important;line-height:1.25!important}
+html body .compact-week-grid .period-label{font-size:clamp(12px,calc(var(--test-row-height,49px) * .23),16px)!important}
+html body .compact-week-grid .period-label small,html body .compact-week-grid .compact-side-slot,html body .compact-week-grid .compact-empty{font-size:clamp(11px,calc(var(--test-row-height,49px) * .22),15px)!important}
+html body .compact-week-grid .compact-meta-row{height:auto;min-height:17px;line-height:1.2}
+</style>
+
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex justify-center selection:bg-indigo-100">
 
@@ -762,16 +772,16 @@ html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions .confirm{backgroun
       weekOffset=Math.round((selected-current)/604800000);closeWeekPicker();expandedLesson=null;renderMainClassList();refreshComci(true);
     }
     function toggleLesson(key) { expandedLesson=expandedLesson===key?null:key;renderMainClassList(); }
-    function lessonFill(step) {
+    function lessonFill(step, session=1) {
       const count=getStepCount(), amount=Math.max(0, Math.min(count, normalizedStepIndex(step)+1));
-      const complete=amount>=count;
-      const color=complete?'#16805b':amount===2?'#80620e':'#a64b1c';
-      const light=complete?'#8ed6a5':amount===2?'#f7dd65':'#ffbd85';
+      const palette=[['#ef7773','#773b39'],['#f5a15f','#794d2c'],['#edcc63','#716029'],['#aed774','#516730'],['#79c9a0','#38634d'],['#67c4c7','#305e61'],['#76b9e6','#375b73'],['#819be8','#3d4b74'],['#b293dc','#57476d'],['#df92bd','#6c465a']];
+      const number=Number.isFinite(Number(session))?Math.max(1,Math.floor(Number(session))):1;
+      const [light,color]=palette[(number-1)%palette.length];
       return {rest:100-(100*amount/count),color,light};
     }
     function advanceLesson(cls, period) {
       const oldState=appState.progress[cls];
-      const previous=lessonFill(oldState.currentStep), previousSession=oldState.currentSession;
+      const previous=lessonFill(oldState.currentStep,oldState.currentSession), previousSession=oldState.currentSession;
       handleMainClassButtonClick(cls);
       if (pendingTopicStart) { pendingTopicStart.period = period; return; }
       const data=appState.progress[cls];
@@ -782,7 +792,7 @@ html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions .confirm{backgroun
       saveState();renderMainClassList();
       const card=document.querySelector?.(`.compact-lesson[data-period="${period}"]`);
       if(card && previousSession===data.currentSession) {
-        const next=lessonFill(data.currentStep);
+        const next=lessonFill(data.currentStep,data.currentSession);
         card.classList.add('progress-reset');
         card.style.setProperty('--progress-rest',previous.rest+'%');
         card.style.setProperty('--progress-color',previous.color);
@@ -791,7 +801,18 @@ html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions .confirm{backgroun
         requestAnimationFrame(()=>{card.classList.remove('progress-reset');card.style.setProperty('--progress-rest',next.rest+'%');card.style.setProperty('--progress-color',next.color);card.style.setProperty('--progress-light',next.light);});
       }
     }
-    function renderMainClassList() {
+    function sizeResponsiveTimetable(){
+      const grid=document.querySelector('#mainClassList .compact-week-grid');
+      if(!grid || !grid.getClientRects().length)return;
+      const viewport=window.visualViewport?.height || window.innerHeight;
+      const available=viewport-grid.getBoundingClientRect().top-16;
+      const row=Math.max(49,Math.min(96,Math.floor((available-45-40)/7)));
+      grid.style.setProperty('--test-row-height',row+'px');
+    }
+    window.addEventListener('resize',()=>requestAnimationFrame(sizeResponsiveTimetable));
+    window.visualViewport?.addEventListener('resize',()=>requestAnimationFrame(sizeResponsiveTimetable));
+    
+function renderMainClassList() {
       const container=document.getElementById('mainClassList');if(!container)return;
       const dates=weekDates(),today=localDate(new Date()),starts=getStartTimes();
       const prev=selectedDay-1,next=selectedDay+1,visible=[prev,selectedDay,next];
@@ -815,7 +836,7 @@ html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions .confirm{backgroun
           if(!data){html+=`<div class="compact-side-slot">${escapeHtml(cls)}</div>`;return;}
           const no=data.currentSession||1,step=data.currentStep||'none',labels=getStepLabels();
           if(!active){html+=`<button onclick="selectDay(${i})" class="compact-side-slot step-${step}" aria-label="${day} ${period}교시 ${escapeHtml(cls)}">${escapeHtml(cls)}<span class="side-dot"></span></button>`;return;}
-          html+=`<div class="compact-lesson-wrap"><button onclick="advanceLesson('${cls}',${period})" aria-label="${escapeHtml(cls)} ${no}차시 진도 나가기" class="compact-lesson step-${step}" data-period="${period}" style="--progress-rest:${lessonFill(step).rest}%;--progress-color:${lessonFill(step).color};--progress-light:${lessonFill(step).light}"><div class="compact-meta-row"><span class="compact-session">${escapeHtml(cls)}</span><span class="compact-status">${no}차시-${step==='none'?'대기':escapeHtml(labels[step]||step)}</span>${getComciLesson(localDate(dates[i]),period)?.changed?'<span class="lesson-change" aria-label="컴시간 변경">변경</span>':''}</div><strong class="compact-topic" title="${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}">${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}</strong></button><button type="button" onclick="toggleLesson('${key}')" aria-expanded="${expandedLesson===key}" aria-label="${period}교시 상세 ${expandedLesson===key?'접기':'펼치기'}" class="compact-expand-btn"><i data-lucide="${expandedLesson===key?'chevron-up':'chevron-down'}" class="w-5 h-5"></i></button></div>`;
+          html+=`<div class="compact-lesson-wrap"><button onclick="advanceLesson('${cls}',${period})" aria-label="${escapeHtml(cls)} ${no}차시 진도 나가기" class="compact-lesson step-${step}" data-period="${period}" style="--progress-rest:${lessonFill(step,no).rest}%;--progress-color:${lessonFill(step,no).color};--progress-light:${lessonFill(step,no).light}"><div class="compact-meta-row"><span class="compact-session">${escapeHtml(cls)}</span><span class="compact-status">${no}차시-${step==='none'?'대기':escapeHtml(labels[step]||step)}</span>${getComciLesson(localDate(dates[i]),period)?.changed?'<span class="lesson-change" aria-label="컴시간 변경">변경</span>':''}</div><strong class="compact-topic" title="${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}">${escapeHtml(appState.sessionTopics[no]||'수업주제 미입력')}</strong></button><button type="button" onclick="toggleLesson('${key}')" aria-expanded="${expandedLesson===key}" aria-label="${period}교시 상세 ${expandedLesson===key?'접기':'펼치기'}" class="compact-expand-btn"><i data-lucide="${expandedLesson===key?'chevron-up':'chevron-down'}" class="w-5 h-5"></i></button></div>`;
         });
         if(expandedLesson===selectedDay+'-'+period){
           const cls=getTimetableClass(localDate(dates[selectedDay]),period),data=appState.progress[cls];
@@ -824,7 +845,7 @@ html:is(.web-dark,.apk-dark) body #topicDialog .topic-actions .confirm{backgroun
           }
         }
       }
-      container.innerHTML=html+'</div>';lucide.createIcons();renderComciStatus();
+      container.innerHTML=html+'</div>';lucide.createIcons();renderComciStatus();if(typeof requestAnimationFrame==='function')requestAnimationFrame(sizeResponsiveTimetable);
     }
 
     // 메인 반 카드 본체 클릭 시: 미시작이면 즉시 [배포]로 전환!
