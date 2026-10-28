@@ -110,3 +110,14 @@ run("advanceClassStep('1-1','dist')");node('topicInput').value='  집합  ';run(
 assert.equal(run("appState.sessionTopics[1]"),'집합');assert.equal(run("appState.progress['1-1'].currentStep"),'dist');
 run("appState.progress['1-1'].currentStep='none';advanceClassStep('1-1','dist')");assert.equal(run("appState.progress['1-1'].currentStep"),'dist');
 console.log('PASS: topic required, empty and cancel preserve progress, save starts and existing topic starts immediately');
+// Starting from the timetable must not record a lesson until the topic is saved.
+run("appState=buildOfflineState(newBlankState(),{name:'교사',subject:'수학',school:'',classes:'1-1'});appState.sessionTopics={}");
+const beforeTopic=JSON.stringify(json('appState.progress'));
+run("advanceLesson('1-1',1)");
+assert.equal(JSON.stringify(json('appState.progress')),beforeTopic);
+run('cancelTopicStart()');assert.equal(JSON.stringify(json('appState.progress')),beforeTopic);
+run("advanceLesson('1-1',1)");node('topicInput').value='함수';run('saveTopicAndStart()');
+assert.equal(run("appState.progress['1-1'].currentStep"),'dist');
+assert.equal(run("appState.progress['1-1'].sessions[1].actions.length"),1);
+assert.equal(run("appState.progress['1-1'].sessions[1].actions[0].period"),1);
+console.log('PASS: timetable start waits for topic; cancel does not mutate; save records one action');
