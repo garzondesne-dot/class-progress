@@ -46,7 +46,8 @@ jobs:
       - name: Copy web app
         run: |
           mkdir -p www/assets
-          cp assets/jindonote-icon.svg www/assets/
+          cp assets/jindonote-icon.svg assets/jindonote-192.png assets/jindonote-512.png www/assets/
+          cp manifest.webmanifest www/
           cp index.html www/index.html
           cp apk-native-ui.js www/apk-native-ui.js
           cp firebase-messaging-sw.js www/firebase-messaging-sw.js
@@ -104,7 +105,8 @@ jobs:
           retention-days: 30
 
       - name: Publish downloadable APK release
-        if: github.ref == 'refs/heads/main'
+        # Disabled until persistent signing is configured and verified (PR #5).
+        if: ${{ false }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
