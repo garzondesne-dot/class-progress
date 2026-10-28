@@ -843,7 +843,7 @@ html body .compact-week-grid .compact-meta-row{height:auto;min-height:17px;line-
           }
         }
       }
-      container.innerHTML=html+'</div>';lucide.createIcons();renderComciStatus();requestAnimationFrame(sizeTestTimetable);
+      container.innerHTML=html+'</div>';lucide.createIcons();renderComciStatus();if(typeof requestAnimationFrame==='function')requestAnimationFrame(sizeTestTimetable);
     }
 
     // 메인 반 카드 본체 클릭 시: 미시작이면 즉시 [배포]로 전환!
