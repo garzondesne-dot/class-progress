@@ -2,7 +2,7 @@ name: Build Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [main, feature/jindonote-dark-topic, feature/jindonote-ui-polish, feature/session-colors-responsive]
+    branches: [main, feature/jindonote-dark-topic, feature/jindonote-ui-polish]
     paths:
       - 'index.html'
       - 'apk-native-ui.js'
