@@ -128,6 +128,22 @@ html:is(.web-dark,.apk-dark) body .compact-lesson .compact-topic,html:is(.web-da
 .compact-day:not(.active) b{font-size:10px}.compact-day:not(.active) small{font-size:9px}
 html:is(.web-dark,.apk-dark) body .week-picker-wrap>button,html:is(.web-dark,.apk-dark) body .week-picker-menu{background:#142535!important;color:#e8f1fc!important;border-color:#526779!important}html:is(.web-dark,.apk-dark) body .compact-sync,html:is(.web-dark,.apk-dark) body .compact-lesson .lesson-change{color:#9dc5ff!important}html:is(.web-dark,.apk-dark) body .theme-setting{border-color:#526779!important;background:#07131f!important}
 html body .compact-expand-btn,html:is(.web-dark,.apk-dark) body .compact-expand-btn{background:transparent!important;border:0!important;box-shadow:none!important}
+
+/* Timetable test design: consistent rows, restrained outlines and no status badge. */
+html body .compact-week-grid .compact-day{height:45px;border-radius:10px;box-shadow:none}
+html body .compact-week-grid .compact-day.active{background:#0757ef!important;color:#fff!important}
+html body .compact-week-grid .compact-day.blank{background:transparent!important}
+html body .compact-week-grid :is(.compact-side-slot,.compact-empty,.compact-lesson-wrap,.compact-lesson,.period-label){height:49px!important;min-height:49px!important;max-height:49px!important}
+html body .compact-week-grid .compact-side-slot{background:#f1f5f9!important;color:#334155!important;border:1px solid #d1dce6!important;border-radius:10px;font-weight:600}
+html:is(.web-dark,.apk-dark) body .compact-week-grid .compact-side-slot{background:#101c27!important;color:#dce8f5!important;border-color:#354858!important}
+html body .compact-week-grid .compact-lesson:is(.step-none,.step-dist,.step-solve,.step-check){border:1px solid #cbd5e1!important;border-left:4px solid #94a3b8!important;border-radius:10px;box-shadow:none!important}
+html:is(.web-dark,.apk-dark) body .compact-week-grid .compact-lesson:is(.step-none,.step-dist,.step-solve,.step-check){border-color:#354858!important;border-left-color:#94a3b8!important}
+html body .compact-week-grid .compact-meta-row{height:17px;gap:6px;justify-content:flex-start;flex-wrap:nowrap;align-items:center}
+html body .compact-week-grid .compact-status{background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;line-height:14px!important;font-size:11px!important;font-weight:500!important;color:#475569!important}
+html:is(.web-dark,.apk-dark) body .compact-week-grid .compact-status{background:transparent!important;color:#dce8f5!important}
+html body .compact-week-grid .compact-session{font-size:12px!important;font-weight:700!important;line-height:16px!important}
+html body .compact-week-grid .compact-topic{display:block;width:100%;font-size:15px!important;line-height:19px!important;font-weight:700!important;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+html body .compact-week-grid .compact-expand-btn,html:is(.web-dark,.apk-dark) body .compact-week-grid .compact-expand-btn{background:transparent!important;border:0!important;box-shadow:none!important}
 </style><link rel="icon" type="image/svg+xml" href="assets/jindonote-icon.svg"><meta name="theme-color" content="#000000">
 <style id="jindonote-reference-design">
 .app-brand{font-size:18px;font-weight:900;letter-spacing:-.03em}.header-identity{display:none}
