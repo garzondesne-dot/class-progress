@@ -98,12 +98,17 @@
 html.apk-dark .compact-status,html.web-dark .compact-status{background:#ffffff26;color:inherit!important}
 </style>
 <style id="jindonote-black">
-html.web-dark,html.web-dark body,html.apk-dark,html.apk-dark body,html.web-dark body>div,html.apk-dark body>div{background:#000!important;color:#f8fafc!important;color-scheme:dark}
+html.web-dark,html.web-dark body,html.apk-dark,html.apk-dark body,html.web-dark body>div:not(.data-dialog),html.apk-dark body>div:not(.data-dialog){background:#000!important;color:#f8fafc!important;color-scheme:dark}
 html.web-dark .bg-white,html.apk-dark .bg-white,html.web-dark .bg-slate-50,html.apk-dark .bg-slate-50,html.web-dark .bg-slate-100,html.apk-dark .bg-slate-100,html.web-dark .bg-gray-50,html.apk-dark .bg-gray-50{background:#101820!important;color:#f8fafc!important}
 html.web-dark .compact-empty,html.apk-dark .compact-empty,html.web-dark .compact-lesson,html.apk-dark .compact-lesson,html.web-dark .compact-side-slot,html.apk-dark .compact-side-slot{background:#18222e!important;color:#f8fafc!important}
 html.web-dark .text-slate-900,html.apk-dark .text-slate-900,html.web-dark .text-slate-800,html.apk-dark .text-slate-800{color:#f8fafc!important}
 html.web-dark .data-dialog>div,html.apk-dark .data-dialog>div{background:#101820!important;color:#f8fafc!important}
 html.web-dark input,html.apk-dark input,html.web-dark textarea,html.apk-dark textarea,html.web-dark select,html.apk-dark select{background:#18222e!important;color:#fff!important;border-color:#526174!important}
+html:is(.web-dark,.apk-dark) :is(.lesson-card,.lesson-empty,.lesson-detail,.compact-day:not(.active),.compact-expand-btn,.mode-selector button,.comci-announcement,.settings-identity,.restore-start,.restore-settings){background:#18222e!important;color:#e2e8f0!important;border-color:#475569!important}
+html:is(.web-dark,.apk-dark) :is(.compact-topic,.compact-session,.compact-chevron){color:#f1f5f9!important}
+html:is(.web-dark,.apk-dark) :is(header,.bg-white\/95){background:#101820!important}
+html:is(.web-dark,.apk-dark) .data-dialog{background:#000b!important}
+html:is(.web-dark,.apk-dark) .data-dialog button:not(.confirm):not(.danger){background:#334155;color:#fff}
 </style><link rel="icon" type="image/svg+xml" href="assets/jindonote-icon.svg"><meta name="theme-color" content="#000000"></head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex justify-center selection:bg-indigo-100">
 
@@ -732,16 +737,37 @@ html.web-dark input,html.apk-dark input,html.web-dark textarea,html.apk-dark tex
       else advanceClassStep(cls, steps[idx + 1]);
     }
 
+    let pendingTopicStart = null;
+    function cancelTopicStart() {
+      pendingTopicStart = null;
+      document.getElementById('topicDialog').classList.add('hidden');
+    }
+    function saveTopicAndStart() {
+      const pending = pendingTopicStart;
+      const topic = document.getElementById('topicInput').value.trim();
+      if (!pending) return;
+      if (!topic) { document.getElementById('topicError').textContent = '수업주제를 입력해주세요.'; document.getElementById('topicInput').focus(); return; }
+      const clsData = appState.progress[pending.cls];
+      if (!clsData || clsData.currentSession !== pending.session || clsData.currentStep !== 'none') { cancelTopicStart(); return; }
+      appState.sessionTopics ||= {};
+      appState.sessionTopics[pending.session] = topic;
+      cancelTopicStart();
+      advanceClassStep(pending.cls, pending.targetStep);
+    }
+
     // 단계 전진 함수 (none -> dist -> solve -> check)
     function advanceClassStep(cls, targetStep) {
       const clsData = appState.progress[cls];
       const curSessionNo = clsData.currentSession;
       
       if (clsData.currentStep === 'none' && targetStep !== 'none' && !String(appState.sessionTopics?.[curSessionNo] || '').trim()) {
-        const topic = window.prompt('수업주제를 입력해주세요. (' + curSessionNo + '차시)');
-        if (topic === null || !topic.trim()) return;
-        appState.sessionTopics[curSessionNo] = topic.trim();
-        saveState();
+        pendingTopicStart = {cls, targetStep, session: curSessionNo};
+        document.getElementById('topicSession').textContent = curSessionNo + '차시';
+        document.getElementById('topicInput').value = '';
+        document.getElementById('topicError').textContent = '';
+        document.getElementById('topicDialog').classList.remove('hidden');
+        document.getElementById('topicInput').focus();
+        return;
       }
       clsData.currentStep = targetStep;
       if (!clsData.sessions[curSessionNo]) {
@@ -1695,8 +1721,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const key='class-progress-web-theme';
   const style=document.createElement('style');
   style.textContent=`
-    html.web-dark,html.web-dark body{background:#0f172a!important;color:#e2e8f0!important;color-scheme:dark}
-    html.web-dark .bg-white,html.web-dark .bg-slate-50,html.web-dark .bg-gray-50,html.web-dark .bg-slate-100{background-color:#1e293b!important}
+    html.web-dark,html.web-dark body{background:#000!important;color:#e2e8f0!important;color-scheme:dark}
+    html.web-dark .bg-white,html.web-dark .bg-slate-50,html.web-dark .bg-gray-50,html.web-dark .bg-slate-100{background-color:#101820!important}
     html.web-dark .text-slate-900,html.web-dark .text-slate-800,html.web-dark .text-slate-700,html.web-dark .text-gray-900,html.web-dark .text-gray-800{color:#f1f5f9!important}
     html.web-dark .text-slate-600,html.web-dark .text-slate-500,html.web-dark .text-slate-400,html.web-dark .text-gray-500{color:#cbd5e1!important}
     html.web-dark .border-slate-100,html.web-dark .border-slate-200,html.web-dark .border-gray-200{border-color:#475569!important}
@@ -1715,6 +1741,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
+<div id="topicDialog" class="data-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="topicTitle"><div><form onsubmit="event.preventDefault();saveTopicAndStart()"><h2 id="topicTitle">수업주제를 입력해주세요.</h2><label for="topicInput" id="topicSession"></label><input id="topicInput" maxlength="200" autocomplete="off" placeholder="예: 선분의 내분"><p id="topicError" role="alert"></p><button type="button" onclick="cancelTopicStart()">취소</button><button class="confirm" type="submit">저장하고 진도 시작</button></form></div></div>
 <input type="file" id="restoreFile" accept="application/json,.json" hidden onchange="previewBackupFile(this.files[0])">
 <div id="restoreConfirm" class="data-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="restoreTitle"><div><h2 id="restoreTitle">백업을 복구할까요?</h2><p id="restoreSummary"></p><p id="restoreStatus" role="status"></p><button type="button" onclick="cancelBackupRestore()">취소</button><button class="confirm" type="button" onclick="applyBackupRestore()">백업 복구</button></div></div>
 <div id="resetConfirm" class="data-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="resetTitle"><div><h2 id="resetTitle">전체 초기화</h2><p>이 기기에 저장된 모든 선생님의 진도·메모·설정을 삭제하고 처음 설정으로 돌아갑니다. 필요한 기록은 먼저 백업해 주세요.</p><label for="resetTyped">확인을 위해 ‘초기화’를 입력하세요.</label><input id="resetTyped" autocomplete="off"><p id="resetStatus" role="status"></p><button type="button" onclick="cancelFullReset()">취소</button><button class="danger" type="button" onclick="performFullReset()">전체 초기화</button></div></div></body>
