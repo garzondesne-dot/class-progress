@@ -2,7 +2,7 @@ name: Build Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, feature/jindonote-dark-topic]
     paths:
       - 'index.html'
       - 'apk-native-ui.js'
@@ -43,7 +43,8 @@ jobs:
           curl -fL --retry 3 https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js -o xlsx.full.min.js
       - name: Copy web app
         run: |
-          mkdir -p www
+          mkdir -p www/assets
+          cp assets/jindonote-icon.svg www/assets/
           cp index.html www/index.html
           cp apk-native-ui.js www/apk-native-ui.js
           cp firebase-messaging-sw.js www/firebase-messaging-sw.js
@@ -61,6 +62,17 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+      - name: Generate launcher icons
+        run: |
+          python -m pip install cairosvg
+          python - <<'PYICON'
+          import cairosvg, os
+          for folder,size in {'mipmap-mdpi':48,'mipmap-hdpi':72,'mipmap-xhdpi':96,'mipmap-xxhdpi':144,'mipmap-xxxhdpi':192}.items():
+              path='android/app/src/main/res/'+folder
+              os.makedirs(path,exist_ok=True)
+              for filename in ('ic_launcher.png','ic_launcher_round.png','ic_launcher_foreground.png'):
+                  cairosvg.svg2png(url='assets/jindonote-icon.svg',write_to=path+'/'+filename,output_width=size,output_height=size)
+          PYICON
       - name: Enable Android notification permissions
         run: |
           sed -i '/<application/i\    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' android/app/src/main/AndroidManifest.xml
