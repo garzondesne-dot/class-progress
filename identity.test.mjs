@@ -130,3 +130,7 @@ run('selectedDay=1;renderMainClassList()');
 assert.match(node('mainClassList').innerHTML,/class="compact-side-slot step-none"[^>]*>1-1/);
 assert.match(node('mainClassList').innerHTML,/화 10\/27<\/b><small>오늘<\/small>/);
 console.log('PASS: adjacent day lessons and today label for selected and adjacent date');
+run('appState.stepCount=3');assert.equal(run("lessonFill('dist').rest"),100-100/3);assert.equal(run("lessonFill('solve').rest"),100-200/3);assert.equal(run("lessonFill('check').rest"),0);assert.equal(run("lessonFill('check').color"),'#16805b');
+run('appState.stepCount=2');assert.equal(run("lessonFill('dist').rest"),50);assert.equal(run("lessonFill('solve').rest"),0);assert.equal(run("lessonFill('solve').color"),'#16805b');
+run('appState.stepCount=1');assert.equal(run("lessonFill('dist').rest"),0);assert.equal(run("lessonFill('dist').color"),'#16805b');
+console.log('PASS: progress fractions and completed green for one, two and three steps');
