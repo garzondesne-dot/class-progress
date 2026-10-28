@@ -117,7 +117,9 @@ html:is(.web-dark,.apk-dark) .data-dialog button:not(.confirm):not(.danger){back
 html body .compact-lesson:is(.step-none,.step-dist,.step-solve,.step-check){background:#f1f5f9!important;color:#102235!important}
 html:is(.web-dark,.apk-dark) body .compact-lesson:is(.step-none,.step-dist,.step-solve,.step-check){background:#101c27!important;color:#f8fafc!important}
 .compact-lesson.progress-reset::before{transition:none!important}
-html body .compact-lesson:is(.step-dist,.step-solve,.step-check) .compact-topic,html body .compact-lesson:is(.step-dist,.step-solve,.step-check) .compact-session{color:#fff!important}
+html body .compact-lesson::before{opacity:.25}
+html:is(.web-dark,.apk-dark) body .compact-lesson::before{opacity:1}
+html:is(.web-dark,.apk-dark) body .compact-lesson .compact-topic,html:is(.web-dark,.apk-dark) body .compact-lesson .compact-session{color:#fff!important}
 .compact-lesson .compact-topic{font-size:16px!important;line-height:1.1}.compact-lesson .compact-session{font-size:12px!important}.compact-lesson .compact-status{font-size:10px!important;padding:1px 5px}.compact-lesson .lesson-change{font-size:9px;line-height:1}
 @media (prefers-reduced-motion:reduce){.compact-lesson::before{transition:none}}
 </style><link rel="icon" type="image/svg+xml" href="assets/jindonote-icon.svg"><meta name="theme-color" content="#000000">
