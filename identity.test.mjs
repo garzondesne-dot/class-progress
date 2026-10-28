@@ -125,12 +125,33 @@ console.log('PASS: timetable start waits for topic; cancel does not mutate; save
 // Adjacent day lessons remain visible, and today is labeled even when not selected.
 run("appState=buildOfflineState(newBlankState(),{name:'교사',subject:'수학',school:'',classes:'1-1,1-2'});appState.timetable={'월-1':'1-1','화-1':'1-2'};weekOffset=0;selectedDay=0;renderMainClassList()");
 assert.match(node('mainClassList').innerHTML,/class="compact-side-slot step-none"[^>]*>1-2/);
-assert.match(node('mainClassList').innerHTML,/화 10\/27<\/b><small>오늘<\/small>/);
+assert.match(node('mainClassList').innerHTML,/(?:화 10\/27<\/b>|화<\/b><small>10\/27<\/small>)<small>오늘<\/small>/);
 run('selectedDay=1;renderMainClassList()');
 assert.match(node('mainClassList').innerHTML,/class="compact-side-slot step-none"[^>]*>1-1/);
-assert.match(node('mainClassList').innerHTML,/화 10\/27<\/b><small>오늘<\/small>/);
+assert.match(node('mainClassList').innerHTML,/(?:화 10\/27<\/b>|화<\/b><small>10\/27<\/small>)<small>오늘<\/small>/);
 console.log('PASS: adjacent day lessons and today label for selected and adjacent date');
 run('appState.stepCount=3');assert.equal(run("lessonFill('dist').rest"),100-100/3);assert.equal(run("lessonFill('solve').rest"),100-200/3);assert.equal(run("lessonFill('check').rest"),0);assert.equal(run("lessonFill('check').color"),'#16805b');
 run('appState.stepCount=2');assert.equal(run("lessonFill('dist').rest"),50);assert.equal(run("lessonFill('solve').rest"),0);assert.equal(run("lessonFill('solve').color"),'#16805b');
 run('appState.stepCount=1');assert.equal(run("lessonFill('dist').rest"),0);assert.equal(run("lessonFill('dist').color"),'#16805b');
 console.log('PASS: progress fractions and completed green for one, two and three steps');
+
+// Week picker changes the selected week/day and leaves user data intact.
+run("appState=buildOfflineState(newBlankState(),{name:'교사',subject:'수학',school:'',classes:'1-1'});appState.sessionTopics[1]='집합';weekOffset=0;selectedDay=1");
+run("chooseWeekDate('2026-11-04')");assert.equal(run('weekOffset'),1);assert.equal(run('selectedDay'),2);assert.equal(run("appState.sessionTopics[1]"),'집합');
+run("chooseWeekDate('2026-02-30')");assert.equal(run('weekOffset'),1);
+run('chooseCurrentWeek()');assert.equal(run('weekOffset'),0);
+run('chooseWeekRelative(-1)');assert.equal(run('weekOffset'),-1);
+assert.ok(!html.includes('id="web-theme-toggle"'));assert.ok(html.includes('id="themeSettingToggle"'));
+console.log('PASS: week picker dates, invalid date, current/previous week, preserved topics and settings theme control');
+// Both platforms reuse their existing theme preference and operate through settings.
+function checkTheme(script,native){
+ const themeStore=new Map([[native?'class-progress-apk-theme':'class-progress-web-theme','light']]);const root=new Classes(),control={textContent:'',setAttribute(k,v){this[k]=v}};const win={Capacitor:{isNativePlatform:()=>native,Plugins:{}}};
+ const doc={readyState:'complete',documentElement:{classList:root},head:{appendChild(){}},createElement(){return {}},getElementById:id=>id==='themeSettingToggle'?control:null,addEventListener(){}};
+ const ctx=vm.createContext({window:win,document:doc,localStorage:{getItem:k=>themeStore.get(k),setItem:(k,v)=>themeStore.set(k,v)},console});
+ vm.runInContext(script,ctx);assert.equal(control.textContent,'꺼짐');assert.equal(root.contains(native?'apk-dark':'web-dark'),false);
+ win.toggleJindonoteTheme();assert.equal(control.textContent,'켜짐');assert.equal(control['aria-checked'],'true');assert.equal(themeStore.get(native?'class-progress-apk-theme':'class-progress-web-theme'),'dark');
+ win.toggleJindonoteTheme();assert.equal(control.textContent,'꺼짐');
+}
+checkTheme(scripts.find(s=>s.includes("const key='class-progress-web-theme'")),false);
+checkTheme(fs.readFileSync('apk-native-ui.js','utf8'),true);
+console.log('PASS: web and APK preserve saved theme and settings switch toggles independently');
