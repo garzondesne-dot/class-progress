@@ -831,6 +831,8 @@ function renderMainClassList() {
         visible.forEach((i,k)=>{
           if(i<0||i>4){html+='<div class="compact-side-slot"></div>';return;}
           const day=DAYS[i],cls=getTimetableClass(localDate(dates[i]),period),key=i+'-'+period,active=i===selectedDay;
+          const fixed=getFixedPeriod(localDate(dates[i]),period);
+          if(fixed){html+=active?'<div class="compact-empty">'+escapeHtml(fixed)+'</div>':`<button onclick="selectDay(${i})" class="compact-side-slot" aria-label="${escapeHtml(fixed)}">${fixed==='자율'?'자율':'방과후'}</button>`;return;}
           if(!cls){html+=active?'<div class="compact-empty">'+(appState.currentIdentity&&appState.currentIdentity.mode!=='offline'&&!getComciLesson(localDate(dates[i]),period)?'시간표 미수신':'수업 없음')+'</div>':'<div class="compact-side-slot"></div>';return;}
           const data=appState.progress[cls];
           if(!data){html+=`<div class="compact-side-slot">${escapeHtml(cls)}</div>`;return;}
@@ -1185,6 +1187,8 @@ function renderMainClassList() {
 
         days.forEach(day => {
           const key = `${day}-${period}`;
+          const fixedLabel=day==='월'&&period===5?'자율':day==='수'&&(period===6||period===7)?'특기적성 방과후':'';
+          if(fixedLabel){html+=`<td class="p-1 border-r border-slate-200"><div class="w-full py-2 px-1 rounded-lg text-xs font-bold text-slate-600">${fixedLabel}</div></td>`;return;}
           const assignedClass = appState.timetable[key] || '';
 
           html += `
@@ -1204,6 +1208,7 @@ function renderMainClassList() {
 
     // 교시 버튼을 누를 때마다 담당 반이 순환하며 배정 (비어있음 -> 1-1 -> 1-2 -> ... -> 1-5 -> 비어있음)
     function cycleTimetableClass(key) {
+      if(key==='월-5'||key==='수-6'||key==='수-7')return;
       const classList = ['', ...appState.classes];
       const current = appState.timetable[key] || '';
       const currentIndex = classList.indexOf(current);
@@ -1481,7 +1486,14 @@ function needsIdentitySetup(state=appState){return state.identitySetupVersion!==
 function comciConfig(){return appState.comci||{enabled:false,weeks:{}};}
 function comciWeek(date){const d=new Date(date+'T12:00:00');d.setDate(d.getDate()-((d.getDay()+6)%7));return localDate(d);}
 function getComciLesson(date,period){const c=comciConfig();return appState.currentIdentity&&appState.currentIdentity.mode!=='offline'?c.weeks?.[comciWeek(date)]?.dates?.[date]?.[period]??null:null;}
+function getFixedPeriod(date,period){
+ const day=new Date(date+'T12:00:00').getDay();
+ if(day===1&&Number(period)===5)return '자율';
+ if(day===3&&(Number(period)===6||Number(period)===7))return '특기적성 방과후';
+ return '';
+}
 function getTimetableClass(date,period){
+ if(getFixedPeriod(date,period))return '';
  const c=comciConfig(),lesson=getComciLesson(date,period);
  if(lesson)return lesson.classKey||'';
  // Connected dates that have not been published are unknown, never a repeated base week.
