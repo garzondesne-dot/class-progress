@@ -180,3 +180,23 @@ assert.equal(run("getTimetableClass('2026-11-03',1)"),'1-1');
 run("weekOffset=1;selectedDay=0;renderMainClassList()");assert.match(node('mainClassList').innerHTML,/자율/);
 run("selectedDay=2;renderMainClassList()");assert.match(node('mainClassList').innerHTML,/특기적성 방과후/);
 console.log('PASS: personal fixed periods are displayed and never resolve to classes');
+
+// Automatic progress: activation boundary, two lessons of one class, manual
+// handling, unknown timetable, repeated openings, and transactional failure.
+run("appState=buildOfflineState(newBlankState(),{name:'교사',subject:'수학',school:'',classes:'1-1,1-2'});appState.sessionTopics={};appState.timetable={'화-1':'1-1','화-2':'1-1','화-3':'1-2'};appState.stepCount=3;appState.autoProgress={enabled:true,enabledAt:'2026-10-27T08:30:00+09:00',processed:{},manual:{'2026-10-27|3|1-2':true},pendingTopics:[]}");
+let result=json("processAutoProgress(new Date('2026-10-27T12:00:00+09:00'))");
+assert.equal(result.processed,2);assert.equal(run("appState.progress['1-1'].currentStep"),'solve');assert.equal(run("appState.progress['1-2'].currentStep"),'none');assert.deepEqual(json('appState.autoProgress.pendingTopics'),[1]);
+assert.equal(json("processAutoProgress(new Date('2026-10-27T12:01:00+09:00'))").processed,0);
+assert.equal(run("appState.progress['1-1'].currentStep"),'solve');
+node('autoTopicInput').value='집합';run('saveAutoTopic()');assert.equal(run('appState.sessionTopics[1]'),'집합');assert.equal(run('appState.autoProgress.pendingTopics.length'),0);
+// A manual action explicitly associated with a past lesson must suppress automation.
+run("appState=buildOfflineState(newBlankState(),{name:'교사',subject:'수학',school:'',classes:'1-1'});appState.timetable={'화-1':'1-1'};appState.autoProgress={enabled:true,enabledAt:'2026-10-27T08:30:00+09:00',processed:{},manual:{},pendingTopics:[]};appState.progress['1-1'].sessions[1].actions=[{lessonDate:'2026-10-27',period:1}]");
+assert.equal(json("processAutoProgress(new Date('2026-10-27T10:00:00+09:00'))").processed,0);assert.equal(run("appState.progress['1-1'].currentStep"),'none');
+// Missing online timetable cannot be interpreted as an empty day or invented class.
+run("appState.currentIdentity={key:'x',teacherLabel:'t',schoolCode:'12345',teacherId:1};appState.comci={enabled:true,weeks:{}};appState.autoProgress={enabled:true,enabledAt:'2026-10-27T08:30:00+09:00',processed:{},manual:{},pendingTopics:[]}");
+result=json("processAutoProgress(new Date('2026-10-27T10:00:00+09:00'))");assert.ok(result.missing>0);assert.equal(result.processed,0);
+// A failed save must not leave advanced data in memory.
+run("appState=buildOfflineState(newBlankState(),{name:'교사',subject:'수학',school:'',classes:'1-1'});appState.timetable={'화-1':'1-1'};appState.autoProgress={enabled:true,enabledAt:'2026-10-27T08:30:00+09:00',processed:{},manual:{},pendingTopics:[]}");
+const oldStore=context.localStorage.setItem;context.localStorage.setItem=()=>{throw Error('실패')};
+assert.equal(json("processAutoProgress(new Date('2026-10-27T10:00:00+09:00'))").error,true);assert.equal(run("appState.progress['1-1'].currentStep"),'none');context.localStorage.setItem=oldStore;
+console.log('PASS: automatic progression, manual exclusion, idempotency, topic prompt and failure preservation');
