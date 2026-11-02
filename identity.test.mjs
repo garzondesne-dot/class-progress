@@ -167,3 +167,16 @@ for(let i=1;i<=30;i++){
 }
 assert.match(html,/compact-expand-btn,html:is\(\.web-dark,\.apk-dark\) body \.compact-expand-btn\{background:transparent!important/);
 console.log('PASS: ten session colors repeat and remain stable across all steps');
+
+// Personal APK: fixed activities must not become classes or class alarms.
+run("appState=buildOfflineState(newBlankState(),{name:'교사',subject:'수학',school:'',classes:'1-1'}); appState.timetable={'월-5':'1-1','수-6':'1-1','수-7':'1-1','화-1':'1-1'}");
+assert.equal(run("getFixedPeriod('2026-11-02',5)"),'자율');
+assert.equal(run("getFixedPeriod('2026-11-04',6)"),'특기적성 방과후');
+assert.equal(run("getFixedPeriod('2026-11-04',7)"),'특기적성 방과후');
+assert.equal(run("getTimetableClass('2026-11-02',5)"),'');
+assert.equal(run("getTimetableClass('2026-11-04',6)"),'');
+assert.equal(run("getTimetableClass('2026-11-04',7)"),'');
+assert.equal(run("getTimetableClass('2026-11-03',1)"),'1-1');
+run("weekOffset=1;selectedDay=0;renderMainClassList()");assert.match(node('mainClassList').innerHTML,/자율/);
+run("selectedDay=2;renderMainClassList()");assert.match(node('mainClassList').innerHTML,/특기적성 방과후/);
+console.log('PASS: personal fixed periods are displayed and never resolve to classes');
